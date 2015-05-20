@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Surrogate {% block title %}- The Proxy Download Server{% endblock %}</title>
+</head>
+<body>
+
+	<div class="wrapper">
+	
+		<div class="header">
+	     	{% block header %}
+	     		
+	     	{% endblock %}
+	   	</div>
+	   	
+	   	<div class="content">
+	     	{% block content %}{% endblock %}
+	   	</div>
+	   	
+	   	<div class="footer">
+	     	{% block footer %}
+	     		
+	     	{% endblock %}
+	   	</div>
+	   	
+	</div>
+	
+	{% block scripts %}{% endblock %}
+</body>
+</html>
