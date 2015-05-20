@@ -1,16 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% FILE: user.erl
+% FILE: download.erl
 %
 % AUTHOR: Jake Breindel
 % DATE: 5-20-15
 %
 % DESCRIPTION:
 %
-% Model class for user
+% Model class for a download
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(user, [Id, UserName, PasswordHash]).
+-module(download, [Id, DisplayUrl, RealUrl, Status, File, UserId]).
 -compile(export_all).
--has({rg_account, one, downloads, many}).
+-belongs_to(user).

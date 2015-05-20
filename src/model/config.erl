@@ -11,5 +11,5 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(user, [Id, AutoStart, Directory, NumSimultaneousDownloads]).
+-module(config, [Id, AutoStart, DownloadDirectory, NumSimultaneousDownloads]).
 -compile(export_all).
