@@ -1,6 +1,6 @@
 
 
--module(surrogate_home_controller, [Req]).
+-module(surrogate_landing_controller, [Req]).
 -compile(export_all).
 
 landing('GET', []) ->
