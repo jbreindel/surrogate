@@ -17,19 +17,23 @@
 config('GET', []) ->
 	case boss_db:find(config, [{id, 1}], [{limit,1}]) of
 		[Config] ->
-			{redirect, proplists:get_value("redirect", Req:post_params(), "/login/login"), account:login_cookies()};
+			{redirect, "/login/login", account:login_cookies()};
 		[] -> 
-			%% Create new config
-			{ok, []}
+			Config = config:new(id, false, "/opt/surrogate", 3),
+			{ok, [{config, Config}]}
 	end;
 
 config('POST', []) ->
-	Account = account:new(id, Req:post_param("UserName"), account_lib:create_password_hash(Req:post_param("Password"))),
+	Config = config:new(id, Req:post_param("autostart"), Req:post_param("downloadDirectory"), Req:post_param("numSimultaneousDownloads")),
+	Account = account:new(id, Req:post_param("userName"), account_lib:create_password_hash(Req:post_param("password"))),
 	case Account:save() of
         {ok, SavedAccount} -> 
-			%% Create config
-            {redirect, "/voter/view/"};
+			case Config:save() of
+				{ok, SavedConfig} ->
+            		{redirect, "/login/login/", {username, Account:get_username()}};				
+				{error, Errors} ->
+				   {ok, [{errors, Errors}, {config, Config}]}
+			end;
         {error, Errors} ->
-			%% Create new config
            {ok, [{errors, Errors}, {config, Config}]}
     end.
