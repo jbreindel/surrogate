@@ -19,8 +19,17 @@ config('GET', []) ->
 		[Config] ->
 			{redirect, proplists:get_value("redirect", Req:post_params(), "/login/login"), account:login_cookies()};
 		[] -> 
+			%% Create new config
 			{ok, []}
 	end;
 
 config('POST', []) ->
- 	{ok, []}.
+	Account = account:new(id, Req:post_param("UserName"), account_lib:create_password_hash(Req:post_param("Password"))),
+	case Account:save() of
+        {ok, SavedAccount} -> 
+			%% Create config
+            {redirect, "/voter/view/"};
+        {error, Errors} ->
+			%% Create new config
+           {ok, [{errors, Errors}, {config, Config}]}
+    end.
