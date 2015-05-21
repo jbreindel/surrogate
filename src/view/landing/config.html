@@ -1,0 +1,50 @@
+{% extends "../view/template.html" %}
+
+{% block content %}
+	<div class="config-form-container">
+		<form action="/" method="POST">
+			<div class="row">
+				<h3>Surrogate Configuration</h3>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+					<label {% if userNameError %}class="error"{% endif %}>UserName
+        				<input type="text" name="username" placeholder="username" value="{% userName %}" />
+      				</label>
+      				{% if userNameError %}<small class="error">Invalid entry</small>{% endif %}
+				</div>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+					<label {% if passwordError %}class="error"{% endif %}>Password
+        				<input type="password" name="password" placeholder="password" />
+      				</label>
+      				{% if passwordError %}<small class="error">Invalid entry</small>{% endif %}
+				</div>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+					<label>Autostart surrogate
+        				<input type="checkbox" name="autostart" {% if autoStart %}checked="checekd"{% endif %} />
+      				</label>
+				</div>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+					<label {% if downloadDirectory %}class="error"{% endif %}>Download Directory
+        				<input type="text" name="downloadDirectory" placeholder="download directory" value="{% downloadDirectory %}" />
+      				</label>
+      				{% if downloadDirectory %}<small class="error">Invalid entry</small>{% endif %}
+				</div>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+					<label {% if numSimultaneousDownloadsError %}class="error"{% endif %}>Download Directory
+        				<input type="text" name="numSimultaneousDownloads" placeholder="number simultaneous downloads" value="{% numSimultaneousDownloads %}" />
+      				</label>
+      				{% if numSimultaneousDownloadsError %}<small class="error">Invalid entry</small>{% endif %}
+				</div>
+			</div>
+		</form>
+	</div>
+{% endblock %}

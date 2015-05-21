@@ -11,6 +11,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(download, [Id, DisplayUrl, RealUrl, Status, File, UserId]).
+-module(download, [Id, DisplayUrl, RealUrl, Status, File, AccountId]).
 -compile(export_all).
--belongs_to(user).
+-belongs_to(account).

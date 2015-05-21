@@ -11,6 +11,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(rg_account, [Id, UserName, Password, UserId]).
+-module(rg_account, [Id, UserName, Password, AccountId]).
 -compile(export_all).
--belongs_to(user).
+-belongs_to(account).

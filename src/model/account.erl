@@ -1,19 +1,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% FILE: user.erl
+% FILE: account.erl
 %
 % AUTHOR: Jake Breindel
 % DATE: 5-20-15
 %
 % DESCRIPTION:
 %
-% Model class for user
+% Model class for account
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(user, [Id, UserName, PasswordHash]).
+-module(account, [Id, UserName, PasswordHash]).
 -compile(export_all).
--has({rg_account, one, downloads, many}).
+-has({rg_account, one}).
+-has({downloads, many}).
 
 -define(SECRET_STRING, "SecretString!!").
 
@@ -25,5 +26,5 @@ check_password(Password) ->
     user_lib:hash_password(Password, Salt) =:= PasswordHash.
 
 login_cookies() ->
-    [ mochiweb_cookies:cookie("user_id", Id, [{path, "/login"}]),
+    [ mochiweb_cookies:cookie("account_id", Id, [{path, "/login"}]),
         mochiweb_cookies:cookie("session_id", session_identifier(), [{path, "/login"}]) ].
