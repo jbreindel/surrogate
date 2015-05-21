@@ -19,9 +19,7 @@ config('GET', []) ->
 		[Config] ->
 			{redirect, proplists:get_value("redirect", Req:post_params(), "/login/login"), account:login_cookies()};
 		[] -> 
-			{ok, []};
-		_ -> 
-			{ok, "Hello World!"}
+			{ok, []}
 	end;
 
 config('POST', []) ->
