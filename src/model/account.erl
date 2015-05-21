@@ -13,8 +13,7 @@
 
 -module(account, [Id, UserName, PasswordHash]).
 -compile(export_all).
--has({rg_account, one}).
--has({downloads, many}).
+-has({premium, many}).
 
 -define(SECRET_STRING, "SecretString!!").
 

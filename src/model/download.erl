@@ -11,6 +11,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(download, [Id, DisplayUrl, RealUrl, Status, File, AccountId]).
+-module(download, [Id, DisplayUrl, RealUrl, Status, Process, File, Length, Progress, PremiumId]).
 -compile(export_all).
--belongs_to(account).
+-belongs_to(premium).

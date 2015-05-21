@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% FILE: rg_account.erl
+% FILE: premium.erl
 %
 % AUTHOR: Jake Breindel
 % DATE: 5-20-15
@@ -11,6 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(rg_account, [Id, UserName, Password, AccountId]).
+-module(premium, [Id, UserName, Password, AccountId]).
 -compile(export_all).
 -belongs_to(account).
+-has({downloads, many}).
