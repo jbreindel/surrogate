@@ -1,4 +1,15 @@
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% FILE: account_lib.erl
+%
+% AUTHOR: Jake Breindel
+% DATE: 5-21-15
+%
+% DESCRIPTION:
+%
+% Account library
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(account_lib).
 -compile(export_all).
