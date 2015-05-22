@@ -1,0 +1,24 @@
+{
+  "name": "surrogate",
+  "version": "0.0.1",
+  "authors": [
+    "Jake Breindel <j.breindel2@outlook.com>"
+  ],
+  "description": "A Proxy Download Server",
+  "moduleType": [
+    "amd"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "foundation": "~5.5.2",
+    "foundation-icons": "*"
+  }
+}

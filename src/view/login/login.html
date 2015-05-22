@@ -1,0 +1,18 @@
+{% extends "./template.html" %}
+
+{% block content %}
+	<div class="login-form">
+		<form  action="/login/login" method="POST">
+			<div class="row">
+				<div class="large-12 columns">
+					<input type="text" name="userName" value="{{ userName }}" />
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-12 columns">
+					<input type="password" name="password" value="" />
+				</div>
+			</div>
+		</form>
+	</div>
+{% endblock %}
