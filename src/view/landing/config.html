@@ -9,7 +9,7 @@
 			<div class="row">
     			<div class="large-12 columns">
 					<label {% if userNameError %}class="error"{% endif %}>UserName
-        				<input type="text" name="username" placeholder="username" value="{{ config.user_name }}" />
+        				<input type="text" name="userName" placeholder="username" value="{{ config.user_name }}" />
       				</label>
       				{% if userNameError %}<small class="error">Invalid entry</small>{% endif %}
 				</div>
@@ -25,7 +25,7 @@
 			<div class="row">
     			<div class="large-12 columns">
 					<label>Autostart surrogate
-        				<input type="checkbox" name="autoStart" {% if config.auto_start %}checked="checekd"{% endif %} />
+        				<input type="checkbox" name="autoStart" {% if config.auto_start %}checked="checked"{% endif %} />
       				</label>
 				</div>
 			</div>
@@ -43,6 +43,11 @@
         				<input type="text" name="numSimultaneousDownloads" placeholder="number simultaneous downloads" value="{{ config.num_simultaneous_downloads }}" />
       				</label>
       				{% if numSimultaneousDownloadsError %}<small class="error">Invalid entry</small>{% endif %}
+				</div>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+        			<input type="submit" value="submit" />
 				</div>
 			</div>
 		</form>

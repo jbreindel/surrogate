@@ -14,7 +14,9 @@
 -module(account_lib).
 -compile(export_all).
 
+hash_password(Password, Salt) ->
+    mochihex:to_hex(erlang:md5(Salt ++ Password)).
+
 create_password_hash(Password, UserName) ->
     Salt = mochihex:to_hex(erlang:md5(UserName)),
-    Hash = user_lib:hash_password(Password, Salt),
-    Hash.
+    hash_password(Password, Salt).

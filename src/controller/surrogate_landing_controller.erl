@@ -25,12 +25,12 @@ config('GET', []) ->
 
 config('POST', []) ->
 	Config = config:new(id, Req:post_param("autoStart"), Req:post_param("downloadDirectory"), Req:post_param("numSimultaneousDownloads")),
-	Account = account:new(id, Req:post_param("userName"), account_lib:create_password_hash(Req:post_param("password"))),
+	Account = account:new(id, Req:post_param("userName"), account_lib:create_password_hash(Req:post_param("password"), Req:post_param("userName"))),
 	case Account:save() of
-        {ok, SavedAccount} -> 
+        {ok, SavedAccount} ->
 			case Config:save() of
 				{ok, SavedConfig} ->
-            		{redirect, "/login/login/", {userName, Account:get_username()}};				
+            		{redirect, "/login/login/", {userName, SavedAccount:get_username()}};				
 				{error, Errors} ->
 				   {ok, [{errors, Errors}, {config, Config}]}
 			end;
