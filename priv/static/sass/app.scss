@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
 
+// foundation
 @import "settings";
 @import "normalize";
 @import "foundation";
+
+@import "mixins";
+
+// partials
+@import "partials/template";
+@import "partials/header";
+@import "partials/footer";
+@import "partials/config";

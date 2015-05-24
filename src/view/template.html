@@ -12,7 +12,9 @@
 	<div class="wrapper">
 	
 		<div class="header">
-	     	{% block header %}{% endblock %}
+	     	{% block header %}
+	     		{% include "include/header.html" %}
+	     	{% endblock %}
 	   	</div>
 	   	
 	   	<div class="content">

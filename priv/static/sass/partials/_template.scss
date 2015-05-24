@@ -1,0 +1,21 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.wrapper {
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 0 0 100px;
+  position: relative;
+  
+  .content {
+  	@include container();
+  }
+}
+
+.sgButton {
+	@include sgButton();
+}

@@ -1,0 +1,12 @@
+.header {
+	@include container();
+	background-color: black;
+	
+	.top-bar {
+		.title-area {
+			.site-title {
+				color: $secondary-color;
+			}
+		}
+	}
+}
