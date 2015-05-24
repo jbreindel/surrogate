@@ -52,3 +52,9 @@ local.properties
 
 # TeXlipse plugin
 .texlipse
+
+### Sass ###
+.sass-cache
+*.css.map
+priv/static/css/*.css
+config.rb~
