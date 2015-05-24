@@ -15,9 +15,9 @@
 -compile(export_all).
 
 config('GET', []) ->
-	case boss_db:find(config, [{id, 1}], [{limit,1}]) of
+	case boss_db:find(config, [], [{limit, 1}]) of
 		[Config] ->
-			{redirect, "/login/login", account:login_cookies()};
+			{redirect, "/login/login", []};
 		[] -> 
 			Config = config:new(id, false, "/opt/surrogate", 3),
 			{ok, [{config, Config}]}
