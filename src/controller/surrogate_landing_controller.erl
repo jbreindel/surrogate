@@ -30,7 +30,7 @@ config('POST', []) ->
         {ok, SavedAccount} ->
 			case Config:save() of
 				{ok, SavedConfig} ->
-            		{redirect, "/login/login/", {userName, SavedAccount:get_username()}};				
+            		{redirect, "/login/login/", []};				
 				{error, Errors} ->
 				   {ok, [{errors, Errors}, {config, Config}]}
 			end;
