@@ -17,5 +17,19 @@
 before_(_) ->
     account_lib:require_login(Req).
 
-%%home('GET', [], Account) ->
-%% 	Downloads = Account:
+home('GET', [], Account) ->
+	Premium = Account:premium(),
+	case Req:query_param("filter") of
+		"pending" ->
+			Downloads = Premium:downloads({status, [0, 1, 2]});
+		"completed" ->
+			Downloads = Premium:downloads({status, 3});
+		"failed" ->
+			Downloads = Premium:downloads({status, 4});
+		undefined ->
+			Downloads = Premium:downloads({status, [0, 1, 2]})
+	end,
+	{ok, Downloads};
+
+home('POST', [], Account) ->
+	Dls = Req:post_param("downloads").
