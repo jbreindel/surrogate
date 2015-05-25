@@ -15,7 +15,7 @@
 -compile(export_all).
 
 login('GET', []) ->
-	case Req:cookie("user_id") of
+	case Req:cookie("account_id") of
 		undefined -> 
 			{ok, []};
 		Id ->
@@ -25,12 +25,12 @@ login('GET', []) ->
                 Account ->
 					case Account:session_identifier() =:= Req:cookie("session_id") of
 						false ->
-							{redirect, "/login/login"};
+							{ok, Account};
 						true ->
-							{ok, Account}
+							{redirect, "/home/home"}
 					end
 			end
-	end.
+	end;
 
 login('POST', []) ->
     UserName = Req:post_param("userName"),
