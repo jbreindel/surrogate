@@ -14,3 +14,11 @@
 -module(download, [Id, DisplayUrl, RealUrl, Status, Process, File, Length, Progress, PremiumId]).
 -compile(export_all).
 -belongs_to(premium).
+
+-define(DL_PENDING, 0).
+-define(DL_AQUIRED, 1).
+-define(DL_ACTIVE, 2).
+-define(DL_PAUSED, 3).
+-define(DL_COMPLETED, 4).
+-define(DL_FAILED, 5).
+-define(DL_NOT_FOUND, 6).
