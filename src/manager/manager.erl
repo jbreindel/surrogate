@@ -11,3 +11,9 @@
 % process and manages download events.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-module(manager, []).
+-export(loop/0)
+
+loop() ->
+	
