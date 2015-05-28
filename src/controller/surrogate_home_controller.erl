@@ -19,17 +19,14 @@ before_(_) ->
 
 home('GET', [], Account) ->
 	Premium = Account:premium(),
-	case Req:query_param("filter") of
+	case Req:query_param("filter", "pending") of
 		"pending" ->
-			Downloads = Premium:downloads({status, 'in', [?DL_PENDING, ?DL_AQUIRED, ?DL_ACTIVE, ?DL_PAUSED]});
+			{ok, {downloads, Premium:downloads({status, 'in', [?DL_PENDING, ?DL_AQUIRED, ?DL_ACTIVE, ?DL_PAUSED]})}};
 		"completed" ->
-			Downloads = Premium:downloads({status, 'equals', ?DL_COMPLETED});
+			{ok, {downloads, Premium:downloads({status, 'equals', ?DL_COMPLETED})}};
 		"failed" ->
-			Downloads = Premium:downloads({status, 'in', [?DL_FAILED, ?DL_NOT_FOUND]});
-		undefined ->
-			Downloads = Premium:downloads({status, 'in', [?DL_PENDING, ?DL_AQUIRED, ?DL_ACTIVE, ?DL_PAUSED]})
-	end,
-	{ok, Downloads};
+			{ok, {downloads, Premium:downloads({status, 'in', [?DL_FAILED, ?DL_NOT_FOUND]})}}
+	end;
 
 home('POST', [], Account) ->
 	Dls = Req:post_param("downloads"),
@@ -38,8 +35,8 @@ home('POST', [], Account) ->
 		{ok, SavedDownloads} ->
 			%% TODO spawn aquisition process
 			%% flash message
-			{redirect, "/home/home"};
+			{redirect, "/home/"};
 		{error, Errors} ->
 			%% flash message
-			{redirect, "/home/home"}
+			{redirect, "/home/"}
 	end.
