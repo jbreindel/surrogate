@@ -21,11 +21,11 @@ home('GET', [], Account) ->
 	Premium = Account:premium(),
 	case Req:query_param("filter", "pending") of
 		"pending" ->
-			{ok, {downloads, Premium:downloads({status, 'in', [?DL_PENDING, ?DL_AQUIRED, ?DL_ACTIVE, ?DL_PAUSED]})}};
+			{ok, [{downloads, Premium:downloads({status, 'in', [?DL_PENDING, ?DL_AQUIRED, ?DL_ACTIVE, ?DL_PAUSED]})}]};
 		"completed" ->
-			{ok, {downloads, Premium:downloads({status, 'equals', ?DL_COMPLETED})}};
+			{ok, [{downloads, Premium:downloads({status, 'equals', ?DL_COMPLETED})}]};
 		"failed" ->
-			{ok, {downloads, Premium:downloads({status, 'in', [?DL_FAILED, ?DL_NOT_FOUND]})}}
+			{ok, [{downloads, Premium:downloads({status, 'in', [?DL_FAILED, ?DL_NOT_FOUND]})}]}
 	end;
 
 home('POST', [], Account) ->
