@@ -3,14 +3,13 @@
 
 -define(APPNAME, surrogate).
 -define(MODELS, [list_to_atom(M) || M <- boss_files:model_list(?APPNAME)]).
--define(NODES, [node()]).
 
 init() ->
-  init_db (),
+  init_db(),
   ok.
 
 init_db() ->
-  init_db ([node ()]). % only for local node? what about nodes()++[node()]?
+  init_db([node()]). % only for local node? what about nodes()++[node()]?
 init_db(Nodes) ->
   mnesia:create_schema(Nodes),
   mnesia:change_table_copy_type(schema, node(), disc_copies), % only for local node?
@@ -19,6 +18,12 @@ init_db(Nodes) ->
   ExistingTables = mnesia:system_info(tables),
   Tables = (ModelList ++ ['_ids_']) -- ExistingTables,
   create_model_tables(Nodes, Tables).
+
+table_copy_type([]) ->
+	ok;
+table_copy_type([Node | Nodes]) ->
+  mnesia:change_table_copy_type(schema, Node, disc_copies),
+  table_copy_type(Nodes).
 
 % create all the tables
 create_model_tables(_, []) -> ok;
@@ -38,7 +43,7 @@ create_model_table(Nodes, Model) ->
 % single table creator wrapper
 create_table(Nodes, Table, Attribs) ->
   mnesia:create_table(Table,
-    [ { disc_copies, Nodes },
+    [{ disc_copies, Nodes },
       { attributes,  Attribs }]).
 
 migrate() ->

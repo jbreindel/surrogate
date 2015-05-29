@@ -12,8 +12,21 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(manager, []).
--export(loop/0)
+-module(manager).
+-export(loop/1)
 
-loop() ->
-	
+loop(Account) ->
+	loop(Account, [], undefined);
+
+loop(Account, ActiveDownloads, WebSocket) ->
+	recieve
+		{links, Links} ->
+			handle_links(Account, Links);
+
+%% handle_links(Account, Links) ->
+%% 	case download_lib:save_downloads(Account:premium(), Links, []) of
+%% 		{ok, SavedDownloads} ->
+%% 			
+%% 		{error, Errors} ->
+%% 			
+%% 	end;
