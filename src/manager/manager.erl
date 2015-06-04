@@ -13,7 +13,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(manager).
--export(loop/1)
+-export(loop/1).
 
 loop(Account) ->
 	loop(Account, [], undefined);
