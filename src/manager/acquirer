@@ -13,7 +13,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(acquirer).
--export(acquire/2).
+-export(acquire/3).
 
-acquire(Premium, Link) ->
-    
+acquire(Manager, Premium, Download) ->
+	%%http:request(get, {Download:get_display_url(), [{"User-Agent", UA}]}, [], []).
