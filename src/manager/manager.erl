@@ -18,7 +18,7 @@
 loop(Account) ->
 	loop(Account, [], undefined, undefined);
 
-loop(Account, ActiveDownloads, Subscriber, DownloadStatus) ->
+loop(Account, Downloads, Subscriber) ->
 	recieve
 
 		%%%%%%%%%%%%%%%%%%%%%
@@ -26,18 +26,14 @@ loop(Account, ActiveDownloads, Subscriber, DownloadStatus) ->
 		%%%%%%%%%%%%%%%%%%%%%
 
 		{subscriber_connect, Subscriber} ->
-			loop(Account, ActiveDownloads, Subscriber, );
-
-		{change_download_status, DownloadStatus}
-			%% TODO
-			loop(Account, ActiveDownloads, Subscriber, DownloadStatus);
+			loop(Account, Downloads, Subscriber);
 
 		{links, Links} ->
 			handle_links(Account, Links),
-			loop(Account, ActiveDownloads, Subscriber);
+			loop(Account, Downloads, Subscriber)
 
 		{subscriber_disconnect, _} ->
-			loop(Account, ActiveDownloads, undefined).
+			loop(Account, Downloads, undefined).
 
 %% handle_links(Account, Links) ->
 %% 	case download_lib:save_downloads(Account:premium(), Links, []) of
