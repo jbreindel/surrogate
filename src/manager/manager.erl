@@ -16,22 +16,27 @@
 -export(loop/1).
 
 loop(Account) ->
-	loop(Account, [], undefined);
+	loop(Account, [], undefined, undefined);
 
-loop(Account, ActiveDownloads, Websocket) ->
+loop(Account, ActiveDownloads, Subscriber, DownloadStatus) ->
 	recieve
 
 		%%%%%%%%%%%%%%%%%%%%%
 		%% Client Messages %%
 		%%%%%%%%%%%%%%%%%%%%%
 
-		{ws_connect, WebSocket} ->
-			loop(Account, ActiveDownloads, Websocket);
+		{subscriber_connect, Subscriber} ->
+			loop(Account, ActiveDownloads, Subscriber, );
+
+		{change_download_status, DownloadStatus}
+			%% TODO
+			loop(Account, ActiveDownloads, Subscriber, DownloadStatus);
 
 		{links, Links} ->
-			handle_links(Account, Links);
+			handle_links(Account, Links),
+			loop(Account, ActiveDownloads, Subscriber);
 
-		{ws_disconnect, _} ->
+		{subscriber_disconnect, _} ->
 			loop(Account, ActiveDownloads, undefined).
 
 %% handle_links(Account, Links) ->
