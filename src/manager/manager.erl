@@ -71,7 +71,7 @@ loop(Account, Downloads, Subscriber) ->
             				Subscriber ! {on_download_accquired, Download};
 						{error, Errors} ->
 				   			{ok, [{errors, Errors}, {config, Config}]}
-					end;
+					end
 			end
 	end.
 
