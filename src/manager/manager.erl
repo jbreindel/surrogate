@@ -60,6 +60,21 @@ loop(Account, Downloads, Subscriber) ->
 		%%%%%%%%%%%%%%%%%%%%%%%
 		
 		%%
+		% download is not found
+		%%
+		{download_not_found, Download} ->
+			case is_pid(Subscriber) of
+				true ->
+					UpdatedDownload = Download::set(status, ?DL_NOT_FOUND),
+					case UpdatedDownload::save() of
+						{ok, SavedDownload} ->
+            				Subscriber ! {on_download_not_found, Download};
+						{error, Errors} ->
+				   			{ok, [{errors, Errors}]}
+					end
+			end;
+		
+		%%
 		% download has been accquired
 		%%
 		{download_accquired, Download} ->
@@ -70,9 +85,25 @@ loop(Account, Downloads, Subscriber) ->
 						{ok, SavedDownload} ->
             				Subscriber ! {on_download_accquired, Download};
 						{error, Errors} ->
-				   			{ok, [{errors, Errors}, {config, Config}]}
+				   			{ok, [{errors, Errors}]}
+					end
+			end;
+			
+		%%
+		% download has started
+		%%
+		{download_started, Download} ->
+			case is_pid(Subscriber) of
+				true ->
+					UpdatedDownload = Download::set(status, ?DL_ACTIVE),
+					case UpdatedDownload::save() of
+						{ok, SavedDownload} ->
+            				Subscriber ! {on_download_started, Download};
+						{error, Errors} ->
+				   			{ok, [{errors, Errors}]}
 					end
 			end
+			
 	end.
 
 %% handle_links(Account, Links) ->
