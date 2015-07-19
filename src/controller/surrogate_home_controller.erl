@@ -13,6 +13,7 @@
 
 -module(surrogate_home_controller, [Req]).
 -compile(export_all).
+-include("src/lib/download_status.hrl").
 
 before_(_) ->
     account_lib:require_login(Req).

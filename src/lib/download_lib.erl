@@ -13,16 +13,20 @@
 
 -module(download_lib).
 -compile(export_all).
+-include("download_status.hrl").
 
 save_downloads(Premium, [], SavedDls) ->
 	{ok, lists:reverse(SavedDls)};
 
 save_downloads(Premium, [Link | Links], SavedDls) ->
-	Download = download:new(id, Link, "", ?DL_PENDING, "", "", 0, 0, Premium:id()),
+	RealUrl = "",
+	File = "",
+	Length = 0,
+	Download = download:new(id, Link, RealUrl, ?DL_PENDING, File, Length, 0, 0, Premium:id()),
 	case Download:save() of
 		{ok, SavedDownload} ->
 			SavedDlList = [SavedDownload | SavedDls],
-    		save_downloads(Account, Links, SavedDlList);				
+    		save_downloads(Premium, Links, SavedDlList);				
 		{error, Errors} ->
 		   {error, Errors}
 	end.		
