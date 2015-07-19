@@ -11,7 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(config, [Id, AutoStart, DownloadDirectory, NumSimultaneousDownloads]).
+-module(config, [Id, DownloadDirectory::string(), NumSimultaneousDownloads::integer()]).
 -compile(export_all).
 
 validation_tests() -> 

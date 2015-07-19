@@ -11,7 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(account, [Id, UserName, PasswordHash]).
+-module(account, [Id, UserName::string(), PasswordHash::string()]).
 -compile(export_all).
 -has({premium, many}).
 

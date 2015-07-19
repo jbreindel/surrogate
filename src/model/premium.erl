@@ -11,7 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(premium, [Id, UserName, Password, AccountId]).
+-module(premium, [Id, UserName::string(), Password::string(), AccountId::integer()]).
 -compile(export_all).
 -belongs_to(account).
 -has({downloads, many}).

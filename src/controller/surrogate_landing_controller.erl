@@ -24,7 +24,7 @@ config('GET', []) ->
 	end;
 
 config('POST', []) ->
-	Config = config:new(id, Req:post_param("autoStart"), Req:post_param("downloadDirectory"), Req:post_param("numSimultaneousDownloads")),
+	Config = config:new(id, Req:post_param("downloadDirectory"), Req:post_param("numSimultaneousDownloads")),
 	Account = account:new(id, Req:post_param("userName"), account_lib:create_password_hash(Req:post_param("password"), Req:post_param("userName"))),
 	case Account:save() of
         {ok, SavedAccount} ->
