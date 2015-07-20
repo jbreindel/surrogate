@@ -45,7 +45,7 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% subscriber sent links to the manager
 		%%
-		{links, Links} ->
+		{subscriber_links, Links} ->
 			handle_links(Account, Links),
 			loop(Account, Downloads, Subscriber);
 		
