@@ -48,6 +48,13 @@ loop(Account, Downloads, Subscriber) ->
 		{links, Links} ->
 			handle_links(Account, Links),
 			loop(Account, Downloads, Subscriber);
+		
+		%%
+		% called when the subscriber wants to refresh their downloads
+		%%
+		{subscriber_refresh, Subscriber} ->
+			Subscriber ! {downloads, Downloads},
+			loop(Account, Downloads, Subscriber);
 
 		%%
 		% subscriber no longer is connected
