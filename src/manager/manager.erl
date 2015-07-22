@@ -79,7 +79,8 @@ loop(Account, Downloads, Subscriber) ->
 						{error, Errors} ->
 				   			{ok, [{errors, Errors}]}
 					end
-			end;
+			end,
+			loop(Account, Downloads, Subscriber);
 		
 		%%
 		% download has been accquired
@@ -94,7 +95,8 @@ loop(Account, Downloads, Subscriber) ->
 						{error, Errors} ->
 				   			{ok, [{errors, Errors}]}
 					end
-			end;
+			end,
+			loop(Account, Downloads, Subscriber);
 			
 		%%
 		% download has started
@@ -109,7 +111,8 @@ loop(Account, Downloads, Subscriber) ->
 						{error, Errors} ->
 				   			{ok, [{errors, Errors}]}
 					end
-			end
+			end,
+			loop(Account, Downloads, Subscriber)
 			
 	end.
 
