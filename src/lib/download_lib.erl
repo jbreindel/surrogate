@@ -28,5 +28,5 @@ save_downloads(Premium, [Link | Links], SavedDls) ->
 			SavedDlList = [SavedDownload | SavedDls],
     		save_downloads(Premium, Links, SavedDlList);				
 		{error, Errors} ->
-		   {error, Errors}
+			{error, Errors}
 	end.		
