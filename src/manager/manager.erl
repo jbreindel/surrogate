@@ -70,14 +70,17 @@ loop(Account, Downloads, Subscriber) ->
 		% download is not found
 		%%
 		{download_not_found, Download} ->
-			case is_pid(Subscriber) of
-				true ->
-					UpdatedDownload = Download::set(status, ?DL_NOT_FOUND),
-					case UpdatedDownload::save() of
-						{ok, SavedDownload} ->
-            				Subscriber ! {on_download_not_found, Download};
-						{error, Errors} ->
-				   			{ok, [{errors, Errors}]}
+			UpdatedDownload = Download::set(status, ?DL_NOT_FOUND),
+			case UpdatedDownload::save() of
+				{ok, SavedDownload} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_not_found, [{download, Download}]}
+					end;
+				{error, Errors} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
 					end
 			end,
 			loop(Account, Downloads, Subscriber);
@@ -86,14 +89,17 @@ loop(Account, Downloads, Subscriber) ->
 		% download has been accquired
 		%%
 		{download_accquired, Download} ->
-			case is_pid(Subscriber) of
-				true ->
-					UpdatedDownload = Download::set(status, ?DL_PENDING),
-					case UpdatedDownload::save() of
-						{ok, SavedDownload} ->
-            				Subscriber ! {on_download_accquired, Download};
-						{error, Errors} ->
-				   			{ok, [{errors, Errors}]}
+			UpdatedDownload = Download::set(status, ?DL_PENDING),
+			case UpdatedDownload::save() of
+				{ok, SavedDownload} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_accquired, [{download, Download}]}
+					end;
+				{error, Errors} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
 					end
 			end,
 			loop(Account, Downloads, Subscriber);
@@ -102,14 +108,36 @@ loop(Account, Downloads, Subscriber) ->
 		% download has started
 		%%
 		{download_started, Download} ->
-			case is_pid(Subscriber) of
-				true ->
-					UpdatedDownload = Download::set(status, ?DL_ACTIVE),
-					case UpdatedDownload::save() of
-						{ok, SavedDownload} ->
-            				Subscriber ! {on_download_started, Download};
-						{error, Errors} ->
-				   			{ok, [{errors, Errors}]}
+			UpdatedDownload = Download::set(status, ?DL_ACTIVE),
+			case UpdatedDownload::save() of
+				{ok, SavedDownload} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_started, [{download, Download}]}
+					end;
+				{error, Errors} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
+					end
+			end,
+			loop(Account, Downloads, Subscriber);
+			
+		%%
+		% download has finished
+		%%
+		{download_complete, Download} ->
+			UpdatedDownload = Download::set(status, ?DL_COMPLETE),
+			case UpdatedDownload::save() of
+				{ok, SavedDownload} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_complete, [{download, Download}]}
+					end;
+				{error, Errors} ->
+					case is_pid(Subscriber) of
+						true ->
+            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
 					end
 			end,
 			loop(Account, Downloads, Subscriber)
