@@ -39,7 +39,7 @@ loop(Account, Downloads, Subscriber) ->
 		% subscriber connects to manager
 		%%
 		{subscriber_connect, Subscriber} ->
-			Subscriber ! {downloads Downloads},
+			Subscriber ! {downloads, Downloads},
 			loop(Account, Downloads, Subscriber);
 
 		%%
