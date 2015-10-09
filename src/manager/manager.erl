@@ -15,6 +15,12 @@
 -module(manager).
 -export(loop/1).
 
+notify_subscriber(Subscriber, Data) ->
+	case is_pid(Subscriber) of
+		true ->
+			Subscriber ! Data
+	end.
+
 %%----------------------------------------------------------------------
 %% Function: loop/1
 %% Purpose: Loops the manager with an Account and default options
@@ -39,7 +45,7 @@ loop(Account, Downloads, Subscriber) ->
 		% subscriber connects to manager
 		%%
 		{subscriber_connect, Subscriber} ->
-			Subscriber ! {downloads, Downloads},
+			notify_subscriber(Subscriber, {downloads, Downloads}, {downloads, Downloads}),
 			loop(Account, Downloads, Subscriber);
 
 		%%
@@ -53,7 +59,7 @@ loop(Account, Downloads, Subscriber) ->
 		% called when the subscriber wants to refresh their downloads
 		%%
 		{subscriber_refresh, Subscriber} ->
-			Subscriber ! {downloads, Downloads},
+			notify_subscriber(Subscriber, {downloads, Downloads}),
 			loop(Account, Downloads, Subscriber);
 
 		%%
@@ -73,15 +79,9 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download::set(status, ?DL_NOT_FOUND),
 			case UpdatedDownload::save() of
 				{ok, SavedDownload} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_not_found, [{download, Download}]}
-					end;
+					notify_subscriber(Subscriber, {on_download_not_found, [{download, Download}]});
 				{error, Errors} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
-					end
+					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 		
@@ -92,15 +92,9 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download::set(status, ?DL_PENDING),
 			case UpdatedDownload::save() of
 				{ok, SavedDownload} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_accquired, [{download, Download}]}
-					end;
+					notify_subscriber(Subscriber, {on_download_accquired, [{download, Download}]});
 				{error, Errors} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
-					end
+					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 			
@@ -111,15 +105,9 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download::set(status, ?DL_ACTIVE),
 			case UpdatedDownload::save() of
 				{ok, SavedDownload} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_started, [{download, Download}]}
-					end;
+					notify_subscriber(Subscriber, {on_download_started, [{download, Download}]});
 				{error, Errors} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
-					end
+					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 			
@@ -130,15 +118,9 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download::set(status, ?DL_COMPLETE),
 			case UpdatedDownload::save() of
 				{ok, SavedDownload} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_complete, [{download, Download}]}
-					end;
+					notify_subscriber(Subscriber, {on_download_complete, [{download, Download}]});
 				{error, Errors} ->
-					case is_pid(Subscriber) of
-						true ->
-            				Subscriber ! {on_download_error, [{download, Download}, {errors, Errors}]}
-					end
+					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber)
 			
