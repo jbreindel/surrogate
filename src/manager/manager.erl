@@ -15,6 +15,12 @@
 -module(manager).
 -export(loop/1).
 
+%%----------------------------------------------------------------------
+%% Function: loop/1
+%% Purpose: Loops the manager with an Account and default options
+%% Args:   	Subscriber - Process monitoring events
+%%			Data - data to send to the subscriber
+%%----------------------------------------------------------------------
 notify_subscriber(Subscriber, Data) ->
 	case is_pid(Subscriber) of
 		true ->
@@ -24,7 +30,9 @@ notify_subscriber(Subscriber, Data) ->
 %%----------------------------------------------------------------------
 %% Function: loop/1
 %% Purpose: Loops the manager with an Account and default options
-%% Args:   Req - Account
+%% Args:   	Account - account cb record
+%%			Downloads - OrderdDictionary of current downloads by id
+%%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account) ->
 	loop(Account, [], undefined);
@@ -32,7 +40,9 @@ loop(Account) ->
 %%----------------------------------------------------------------------
 %% Function: loop/3
 %% Purpose: Loops the manager with an Account, Downloads, and Subscriber
-%% Args:   Req - Account
+%% Args:   	Account - account cb record
+%%			Downloads - OrderdDictionary of current downloads by id
+%%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account, Downloads, Subscriber) ->
 	recieve
@@ -125,11 +135,3 @@ loop(Account, Downloads, Subscriber) ->
 			loop(Account, Downloads, Subscriber)
 			
 	end.
-
-%% handle_links(Account, Links) ->
-%% 	case download_lib:save_downloads(Account:premium(), Links, []) of
-%% 		{ok, SavedDownloads} ->
-%% 			
-%% 		{error, Errors} ->
-%% 			
-%% 	end;
