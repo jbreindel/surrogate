@@ -16,8 +16,8 @@
 -export(loop/1).
 
 %%----------------------------------------------------------------------
-%% Function: loop/1
-%% Purpose: Loops the manager with an Account and default options
+%% Function: notify_subscriber/2
+%% Purpose: Sends the subscriber the data if it exists
 %% Args:   	Subscriber - Process monitoring events
 %%			Data - data to send to the subscriber
 %%----------------------------------------------------------------------

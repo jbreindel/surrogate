@@ -19,7 +19,7 @@ config('GET', []) ->
 		[Config] ->
 			{redirect, "/login/login", []};
 		[] -> 
-			Config = config:new(id, false, "/opt/surrogate", 3),
+			Config = config:new(id, "/opt/surrogate", 3),
 			{ok, [{config, Config}]}
 	end;
 

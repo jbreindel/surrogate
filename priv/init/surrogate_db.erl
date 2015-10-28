@@ -52,5 +52,5 @@ migrate() ->
 
 rebuild() ->
     mnesia:stop(),
-    mnesia:delete_schema(?NODES),
+    mnesia:delete_schema([node()]),
     init().
