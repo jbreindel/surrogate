@@ -11,7 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(surrograte_login_controller, [Req]).
+-module(surrogate_login_controller, [Req]).
 -compile(export_all).
 
 login('GET', []) ->
@@ -27,7 +27,7 @@ login('GET', []) ->
 						false ->
 							{ok, Account};
 						true ->
-							{redirect, "/home/home"}
+							{redirect, "/home"}
 					end
 			end
 	end;
