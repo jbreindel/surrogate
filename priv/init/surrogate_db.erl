@@ -38,7 +38,7 @@ create_model_table (Nodes, '_ids_') ->
 % tables generated from model
 create_model_table(Nodes, Model) ->
   Record = boss_record_lib:dummy_record(Model),
-  { Model, create_table(Nodes, Model, Record:attribute_names ()) }.
+  { Model, create_table(Nodes, Model, Record:attribute_names()) }.
 
 % single table creator wrapper
 create_table(Nodes, Table, Attribs) ->

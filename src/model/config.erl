@@ -16,12 +16,13 @@
 
 validation_tests() -> 
 	[{fun() -> 
-			  FileName = DownloadDirectory ++ "/foo",
+			  FileName = DownloadDirectory ++ "foo",
 			  case file:write_file(FileName, io_lib:fwrite("~p.\n", ["Hello World!"])) of
 				  ok ->
 					  file:delete(FileName),
 					  true;
 				  {error, Reason} ->
+					  erlang:display(Reason),
 					  false
 			  end
 	  end, "Download Directory is not writable"}].
