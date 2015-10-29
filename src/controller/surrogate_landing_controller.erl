@@ -12,7 +12,31 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(surrogate_landing_controller, [Req]).
--export(config/2).
+-compile(export_all).
+
+%% config_form_validator() ->
+%% 	[
+%% 	 [{name, "userName"}, 
+%% 	 {rule, fun(UserName) ->
+%% 				case form_lib:str_len_validator(UserName, 
+%% 				[{min, 2}, {message, "UserName must be greater than 2 characters"}], 
+%% 				[{max, 32}, {message, "Username can't be more than 32 characters."}]) of
+%% 					Message ->
+%% 						Message;
+%% 					undefined ->
+%% 						true
+%% 				end}],
+%% 	[{name, "password"},
+%% 	{rule, fun(Password) -> 
+%% 				case form_lib:str_len_validator(Password, 
+%% 				[{min, 8}, {message, "Password must be between 8 and 32 characters."}], 
+%% 				[{max, 32}, {message, "Password can't be more than 32 characters."}]) of
+%% 					Message ->
+%% 						Message;
+%% 					undefined ->
+%% 						true
+%% 				end}]
+%% 	].
 
 config('GET', []) ->
 	case boss_db:find(config, [], [{limit, 1}]) of
@@ -31,10 +55,8 @@ config('POST', []) ->
         {ok, SavedAccount} ->
 			case Config:save() of
 				{ok, SavedConfig} ->
-					erlang:display("Saved Config!"),
             		{redirect, "/login", []};				
 				{error, Errors} ->
-					erlang:display({config_save, Errors}),
 				   	{ok, [{errors, Errors}, {config, Config}]}
 			end;
         {error, Errors} ->

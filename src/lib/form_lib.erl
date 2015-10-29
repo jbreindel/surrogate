@@ -11,8 +11,23 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(manager).
--export(validate/2).
+-module(form_lib).
+-export([str_len_validator/3, validate/2]).
+
+%%----------------------------------------------------------------------
+%% Function: str_len_validator/3
+%% Purpose: Performs validation on the string length.
+%% Args:   	String - string to be validated
+%%			Min - minimum value and message
+%%			Max - maximum value and message
+%%----------------------------------------------------------------------
+str_len_validator(String, [{min, Min}, {message, MinMessage}], [{max, Max}, {message, MaxMessage}]) ->
+	case string:len(String) of
+		Len when Len < Min ->
+			MinMessage;
+		Len  when Len >= Max ->
+			MaxMessage
+		end.
 
 validate_rule(Req, [{name, Name}, {input, Input}], Rule, Errors) ->
 	case Rule(Input) of
@@ -37,7 +52,7 @@ perform_validation_rule(Req, [{name, Name}, {rule, Rule}], Errors) ->
 %%			Validation - validation rules for the request
 %%----------------------------------------------------------------------
 validate(Req, Validation) ->
-	validate(Req, Validation, []);
+	validate(Req, Validation, []).
 
 %%----------------------------------------------------------------------
 %% Function: validate/3
