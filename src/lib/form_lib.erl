@@ -17,7 +17,9 @@
 validate_rule(Req, [{name, Name}, {input, Input}], Rule, Errors) ->
 	case Rule(Input) of
 		ErrorMessage ->
-			Errors ++ [{name, Name}, {error, ErrorMessage}]
+			Errors ++ [{name, Name}, {error, ErrorMessage}];
+		false ->
+			Errors
 	end.
 
 perform_validation_rule(Req, [{name, Name}, {rule, Rule}], Errors) ->
