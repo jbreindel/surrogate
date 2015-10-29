@@ -12,7 +12,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(surrogate_landing_controller, [Req]).
--compile(export_all).
+-export(config/2).
 
 config('GET', []) ->
 	case boss_db:find(config, [], [{limit, 1}]) of
