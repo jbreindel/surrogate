@@ -32,17 +32,19 @@ str_len_validator(String, [{min, Min}, {message, MinMessage}], [{max, Max}, {mes
 validate_rule(Req, [{name, Name}, {input, Input}], Rule, Errors) ->
 	case Rule(Input) of
 		ErrorMessage ->
-			Errors ++ [{name, Name}, {error, ErrorMessage}];
+			ErrorName = Name ++ "Error",
+			Errors ++ [{list_to_atom(ErrorName), ErrorMessage}];
 		false ->
 			Errors
 	end.
 
 perform_validation_rule(Req, [{name, Name}, {rule, Rule}], Errors) ->
+	erlang:display({name, Name}),
 	case Req:post_param(Name) of
 		Input ->
 			validate_rule(Req, [{name, Name}, {input, Input}], Rule, Errors);
 		undefined ->
-			Errors ++ [{name, Name}, {error, "Need to fill out required Field"}]
+			Errors ++ [[{name, Name}, {error, "Need to fill out required Field"}]]
 	end.
 
 %%----------------------------------------------------------------------
@@ -64,8 +66,8 @@ validate(Req, Validation) ->
 validate(Req, [], Errors) ->
 	Errors;
 validate(Req, [Validator|Validation], Errors) ->
-	perform_validation_rule(Req, Validator, Errors),
-	validate(Req, Validation, Errors).
+	ErrorMessages = perform_validation_rule(Req, Validator, Errors),
+	validate(Req, Validation, ErrorMessages).
 	
 					
 	
