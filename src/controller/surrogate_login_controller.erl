@@ -38,7 +38,7 @@ login('POST', []) ->
 		[Account] ->
 			case Account:check_password(Req:post_param("password")) of
                 true ->
-                    {redirect, proplists:get_value("redirect", Req:post_params(), "/"), Account:login_cookies()};
+                    {redirect, proplists:get_value("redirect", Req:post_params(), "/home"), Account:login_cookies()};
                 false ->
                     {ok, [{error, "Bad name/password combination"}]}
             end;
