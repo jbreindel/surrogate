@@ -1,0 +1,26 @@
+{
+  "name": "surrogate",
+  "version": "0.0.1",
+  "description": "A proxy download manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://jbreindel@bitbucket.org/jbreindel/surrogate.git"
+  },
+  "keywords": [
+    "download"
+  ],
+  "author": "Jake Breindel",
+  "license": "Apache 2",
+  "dependencies": {
+    "gulp": "^3.9.0",
+    "gulp-bower": "0.0.10",
+    "gulp-concat": "^2.6.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.1.0",
+    "streamqueue": "^1.1.1"
+  }
+}

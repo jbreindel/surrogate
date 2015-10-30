@@ -29,9 +29,6 @@ local.properties
 .settings/
 .loadpath
 
-# Eclipse Core
-.project
-
 # External tool builders
 .externalToolBuilders/
 
@@ -56,5 +53,8 @@ local.properties
 ### Sass ###
 .sass-cache
 *.css.map
-priv/static/css/*.css
-config.rb~
+priv/static/css/
+
+# Dependency directory
+# https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
+node_modules
