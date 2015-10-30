@@ -23,7 +23,7 @@ config_form_validator() ->
 				[{max, 32}, {message, "Username can't be more than 32 characters."}]) of
 					Message ->
 						Message;
-					undefined ->
+					true ->
 						true
 				end 
 	  		end}],
@@ -34,7 +34,7 @@ config_form_validator() ->
 				[{max, 32}, {message, "Password can't be more than 32 characters."}]) of
 					Message ->
 						Message;
-					undefined ->
+					true ->
 						true
 				end
 	 		end}]
@@ -65,9 +65,11 @@ config('POST', []) ->
 						   	{ok, [{error, Error}, {config, Config}]}
 					end;
 		        {error, Error} ->
+					erlang:display(Error),
 		        	{ok, [{error, Error}, {config, Config}]}
 		    end;
 		Error ->
+			erlang:display(Error),
 			{ok, [{error, Error}, {config, Config}]}
 	end.
 	

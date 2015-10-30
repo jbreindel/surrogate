@@ -26,16 +26,18 @@ str_len_validator(String, [{min, Min}, {message, MinMessage}], [{max, Max}, {mes
 		Len when Len < Min ->
 			MinMessage;
 		Len  when Len >= Max ->
-			MaxMessage
+			MaxMessage;
+		_ ->
+			true
 		end.
 
 validate_rule(Req, [{name, Name}, {input, Input}], Rule, Errors) ->
 	case Rule(Input) of
+		true ->
+			Errors;
 		ErrorMessage ->
 			ErrorName = Name ++ "Error",
-			Errors ++ [{list_to_atom(ErrorName), ErrorMessage}];
-		false ->
-			Errors
+			Errors ++ [{list_to_atom(ErrorName), ErrorMessage}]
 	end.
 
 perform_validation_rule(Req, [{name, Name}, {rule, Rule}], Errors) ->
