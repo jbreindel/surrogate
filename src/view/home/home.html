@@ -1,0 +1,28 @@
+{% extends "./template.html" %}
+
+{% block contentTitle %}
+<div class="row">
+	<h3>Home</h3>
+</div>
+{% endblock %}
+
+{% block content %}
+	<div class="home">
+		<ul class="tabs" data-tab>
+		  <li class="tab-title active"><a href="#pending">Pending</a></li>
+		  <li class="tab-title"><a href="#completed">Completed</a></li>
+		  <li class="tab-title"><a href="#failed">Failed</a></li>
+		</ul>
+		<div class="tabs-content">
+		  <div class="content active" id="pending">
+		    <p>This is the first panel of the basic tab example. You can place all sorts of content here including a grid.</p>
+		  </div>
+		  <div class="content" id="completed">
+		    <p>This is the second panel of the basic tab example. This is the second panel of the basic tab example.</p>
+		  </div>
+		  <div class="content" id="failed">
+		    <p>This is the third panel of the basic tab example. This is the third panel of the basic tab example.</p>
+		  </div>
+		</div>
+	</div>
+{% endblock %}
