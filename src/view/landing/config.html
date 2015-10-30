@@ -1,56 +1,44 @@
 {% extends "./template.html" %}
 
+{% block contentTitle %}
+<div class="row">
+	<h3>Initial Configuration</h3>
+</div>
+{% endblock %}
+
 {% block content %}
 	<div class="config-form-container">
 		<form action="/" method="POST">
 			<div class="row">
-				<h3>Surrogate Initial Configuration</h3>
-			</div>
-			{% if errors %}
-				{% for error in errors %} 
-	   				<div data-alert class="alert-box alert radius">
-  						{{ error }}
-  						<a href="#" class="close">&times;</a>
-					</div>
-	   			{% endfor %}
-	   		{% endif %}
-			<div class="row">
     			<div class="large-12 columns">
-					<label {% if userNameError %}class="error"{% endif %}>UserName
+					<label {% if error.userNameError %}class="error"{% endif %}>UserName
         				<input type="text" name="userName" placeholder="username" value="{{ config.user_name }}" />
       				</label>
-      				{% if userNameError %}<small class="error">Invalid entry</small>{% endif %}
+      				{% if error.userNameError %}<small class="error">{{ error.userNameError }}</small>{% endif %}
 				</div>
 			</div>
 			<div class="row">
     			<div class="large-12 columns">
-					<label {% if passwordError %}class="error"{% endif %}>Password
+					<label {% if error.passwordError %}class="error"{% endif %}>Password
         				<input type="password" name="password" placeholder="password" />
       				</label>
-      				{% if passwordError %}<small class="error">Invalid entry</small>{% endif %}
+      				{% if error.passwordError %}<small class="error">{{ error.passwordError }}</small>{% endif %}
 				</div>
 			</div>
 			<div class="row">
     			<div class="large-12 columns">
-					<label>Autostart surrogate
-        				<input type="checkbox" name="autoStart" {% if config.auto_start %}checked="checked"{% endif %} />
-      				</label>
-				</div>
-			</div>
-			<div class="row">
-    			<div class="large-12 columns">
-					<label {% if downloadDirectory %}class="error"{% endif %}>Download Directory
+					<label {% if error.downloadDirectoryError %}class="error"{% endif %}>Download Directory
         				<input type="text" name="downloadDirectory" placeholder="download directory" value="{{ config.download_directory }}" />
       				</label>
-      				{% if downloadDirectory %}<small class="error">Invalid entry</small>{% endif %}
+      				{% if error.downloadDirectoryError %}<small class="error">{{ error.downloadDirectoryError }}</small>{% endif %}
 				</div>
 			</div>
 			<div class="row">
     			<div class="large-12 columns">
-					<label {% if numSimultaneousDownloadsError %}class="error"{% endif %}>Number Simultaneous Downloads
+					<label {% if error.numSimultaneousDownloadsError %}class="error"{% endif %}>Number Simultaneous Downloads
         				<input type="text" name="numSimultaneousDownloads" placeholder="number simultaneous downloads" value="{{ config.num_simultaneous_downloads }}" />
       				</label>
-      				{% if numSimultaneousDownloadsError %}<small class="error">Invalid entry</small>{% endif %}
+      				{% if error.numSimultaneousDownloadsError %}<small class="error">{{ error.numSimultaneousDownloadsError }}</small>{% endif %}
 				</div>
 			</div>
 			<div class="row">

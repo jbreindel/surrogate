@@ -50,25 +50,24 @@ config('GET', []) ->
 	end;
 
 config('POST', []) ->
+	{NumDownloads, _} = string:to_integer(Req:post_param("numSimultaneousDownloads")),
+	Config = config:new(id, Req:post_param("downloadDirectory"), NumDownloads),
 	FormValidator = config_form_validator(),
 	case form_lib:validate(Req, FormValidator) of
 		[] ->
 			Account = account:new(id, Req:post_param("userName"), account_lib:create_password_hash(Req:post_param("password"), Req:post_param("userName"))),
-			{NumDownloads, _} = string:to_integer(Req:post_param("numSimultaneousDownloads")),
-			Config = config:new(id, Req:post_param("downloadDirectory"), NumDownloads),
 			case Account:save() of
 		        {ok, SavedAccount} ->
 					case Config:save() of
 						{ok, SavedConfig} ->
 		            		{redirect, "/login/login", []};				
-						{error, Errors} ->
-						   	{ok, [{errors, Errors}, {config, Config}]}
+						{error, Error} ->
+						   	{ok, [{error, Error}, {config, Config}]}
 					end;
-		        {error, Errors} ->
-		        	{ok, [{errors, Errors}, {config, Config}]}
+		        {error, Error} ->
+		        	{ok, [{error, Error}, {config, Config}]}
 		    end;
-		Errors ->
-			erlang:display(Errors),
-			{ok, [{errors, Errors}]}
+		Error ->
+			{ok, [{error, Error}, {config, Config}]}
 	end.
 	
