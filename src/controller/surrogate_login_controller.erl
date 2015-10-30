@@ -27,7 +27,7 @@ login('GET', []) ->
 						false ->
 							{ok, Account};
 						true ->
-							{redirect, "/home"}
+							{redirect, "/home/home"}
 					end
 			end
 	end;
@@ -38,11 +38,11 @@ login('POST', []) ->
 		[Account] ->
 			case Account:check_password(Req:post_param("password")) of
                 true ->
-                    {redirect, proplists:get_value("redirect", Req:post_params(), "/home"), Account:login_cookies()};
+                    {redirect, proplists:get_value("redirect", Req:post_params(), "/home/home"), Account:login_cookies()};
                 false ->
                     {ok, [{error, "Bad name/password combination"}]}
             end;
 		[] ->
-            {ok, [{error, "No Account with username  " ++ UserName}]}
+            {ok, [{error, [{userNameError, "No Account with username  " ++ UserName}]}]}
     end.
 			

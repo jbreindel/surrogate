@@ -4,13 +4,24 @@
 	<div class="login-form">
 		<form  action="/login/login" method="POST">
 			<div class="row">
-				<div class="large-12 columns">
-					<input type="text" name="userName" value="{{ userName }}" />
+    			<div class="large-12 columns">
+					<label {% if error.userNameError %}class="error"{% endif %}>Username
+						<input type="text" name="userName" placeholder="username" value="{{ account.user_name }}" />
+      				</label>
+      				{% if error.userNameError %}<small class="error">{{ error.userNameError }}</small>{% endif %}
 				</div>
 			</div>
 			<div class="row">
-				<div class="large-12 columns">
-					<input type="password" name="password" value="" />
+    			<div class="large-12 columns">
+					<label {% if error.passwordError %}class="error"{% endif %}>Password
+        				<input type="password" name="password" placeholder="password" />
+      				</label>
+      				{% if error.passwordError %}<small class="error">{{ error.passwordError }}</small>{% endif %}
+				</div>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+        			<input class="button sgButton" type="submit" value="Submit" />
 				</div>
 			</div>
 		</form>
