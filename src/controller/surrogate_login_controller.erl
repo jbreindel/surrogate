@@ -25,7 +25,7 @@ login('GET', []) ->
                 Account ->
 					case Account:session_identifier() =:= Req:cookie("session_id") of
 						false ->
-							{ok, Account};
+							{ok, [{account, Account}]};
 						true ->
 							{redirect, "/home/home"}
 					end
