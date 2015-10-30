@@ -1,6 +1,9 @@
+.header-container {
+	background-color: $primary-color;
+}
+
 .header {
 	@include container();
-	background-color: black;
 	
 	.top-bar {
 		.title-area {

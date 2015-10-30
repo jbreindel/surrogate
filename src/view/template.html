@@ -11,19 +11,25 @@
 
 	<div class="wrapper">
 	
-		<div class="header">
-	     	{% block header %}
-	     		{% include "include/header.html" %}
-	     	{% endblock %}
+		<div class="outter-container header-container">
+			<div class="inner-container header">
+	     		{% block header %}
+	     			{% include "include/header.html" %}
+	     		{% endblock %}
+	   		</div>
 	   	</div>
 	   	
-	   	<div class="content">
-			{% block contentTitle %}{% endblock %}
-	     	{% block content %}{% endblock %}
+	   	<div class="outter-container content-container">
+		   	<div class="inner-container content">
+				{% block contentTitle %}{% endblock %}
+		     	{% block content %}{% endblock %}
+		   	</div>
 	   	</div>
 	   	
-	   	<div class="footer">
-	     	{% block footer %}{% endblock %}
+	   	<div class="outter-container footer-container">
+		   	<div class="inner-container footer">
+		     	{% block footer %}{% endblock %}
+		   	</div>
 	   	</div>
 	   	
 	</div>

@@ -11,6 +11,10 @@ body {
   padding: 0 0 100px;
   position: relative;
   
+  .outter-container {
+  	width: 100%;
+  }
+  
   .content {
   	@include container();
   }
