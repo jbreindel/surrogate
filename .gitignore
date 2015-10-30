@@ -53,7 +53,14 @@ local.properties
 ### Sass ###
 .sass-cache
 *.css.map
+
+## Generated folders
 priv/static/css/
+priv/static/fonts/
+priv/static/js/
+
+## bower lock file
+bower.json~
 
 # Dependency directory
 # https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
