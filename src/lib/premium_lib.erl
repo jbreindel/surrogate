@@ -11,7 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(form_lib).
+-module(premium_lib).
 -export([premium_login/1]).
 
 rapidgator_login_form(Email, Password) ->
@@ -23,7 +23,8 @@ rapidgator_login_form(Email, Password) ->
 		
 
 rapidgator_login(Premium) ->
-	Form = rapidgator_login_form(Premium:userName(), Premium:password()),
+	erlang:display(Premium),
+	Form = rapidgator_login_form(Premium:user_name(), Premium:password()),
 	case httpc:request(post, {"https://rapidgator.net/auth/login", [], 
 							  "application/x-www-form-urlencoded", Form}, [], []) of
 		{ok, {{Version, 302, ReasonPhrase}, Headers, Body}} ->

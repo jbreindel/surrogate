@@ -25,5 +25,5 @@ check_password(Password) ->
     account_lib:hash_password(Password, Salt) =:= PasswordHash.
 
 login_cookies() ->
-    [ mochiweb_cookies:cookie("account_id", Id, [{path, "/login"}]),
-        mochiweb_cookies:cookie("session_id", session_identifier(), [{path, "/login"}]) ].
+    [ mochiweb_cookies:cookie("account_id", Id, [{path, "/"}]),
+        mochiweb_cookies:cookie("session_id", session_identifier(), [{path, "/"}]) ].

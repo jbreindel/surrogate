@@ -6,6 +6,7 @@
 % function below (stop is executed if the script is ever reloaded).
 init() ->
     inets:start(),
+	ssl:start(),
     {ok, []}.
 
 stop(ListOfWatchIDs) ->

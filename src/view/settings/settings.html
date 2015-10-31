@@ -28,10 +28,15 @@
 			</div>
 			<div class="row">
 				<div class="small-12 columns">
-					<label {% if error.passwordError %}class="error"{% endif %}>Email
-						<input type="password" name="email" placeholder="email" value="" />
+					<label {% if error.passwordError %}class="error"{% endif %}>Password
+						<input type="password" name="password" placeholder="password" value="" />
       				</label>
       				{% if error.passwordError %}<small class="error">{{ error.passwordError }}</small>{% endif %}
+				</div>
+			</div>
+			<div class="row">
+    			<div class="large-12 columns">
+        			<input class="button sgButton" type="submit" value="Submit" />
 				</div>
 			</div>
 		</form>

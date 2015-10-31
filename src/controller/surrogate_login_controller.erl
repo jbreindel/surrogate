@@ -38,6 +38,7 @@ login('POST', []) ->
 		[Account] ->
 			case Account:check_password(Req:post_param("password")) of
                 true ->
+					erlang:display(Account:login_cookies()),
                     {redirect, proplists:get_value("redirect", Req:post_params(), "/home/home"), Account:login_cookies()};
                 false ->
                     {ok, [{error, "Bad name/password combination"}]}

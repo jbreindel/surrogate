@@ -24,7 +24,7 @@ create_password_hash(Password, UserName) ->
 require_login(Req) ->
 	case Req:cookie("account_id") of
 		undefined -> 
-			{ok, []};
+			{redirect, "/login/login"};
 		Id ->
 			case boss_db:find(Id) of
                 undefined -> 
@@ -32,8 +32,10 @@ require_login(Req) ->
                 Account ->
 					case Account:session_identifier() =:= Req:cookie("session_id") of
 						false ->
+							erlang:display({false, Account}),
 							{redirect, "/login/login"};
 						true ->
+							erlang:display({true, Account}),
 							{ok, Account}
 					end
 			end
