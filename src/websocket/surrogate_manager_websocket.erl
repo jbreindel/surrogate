@@ -12,18 +12,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(surrogate_manager_websocket, [Req, SessionId]).
--compile(export_all).
+-behaviour(boss_service_handler).
+
+-record(state,{users}).
+
+-export([init/0, 
+	handle_incoming/4, 
+	handle_join/3,
+        handle_broadcast/2,
+	handle_close/4, 
+	handle_info/2,
+	terminate/2]).
 
 init() -> 
+	erlang:display("Initializing Websocket!"),
 	{ok, []}.
 
 handle_join(ServiceUrl, WebSocket, State) ->
 	erlang:display("handle_join"),
-	{noreply, []}.
+	{noreply, [{message, "Joined!"}]}.
 
 handle_incoming(ServiceUrl, WebSocket, Message, State) ->
 	erlang:display("handle_incoming"),
-	{noreply, []}.
+	{noreply, [{message, "Received Message!"}]}.
 
 handle_broadcast(Message, State) ->
 	erlang:display("handle_broadcast"),

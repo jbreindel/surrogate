@@ -15,26 +15,30 @@
  	'use strict';
  	
  	// open a websocket
- 	var managerSocket = new WebSocket('ws://' + location.host + '/');
+ 	var managerSocket = new WebSocket('ws://' + location.host + '/websocket/manager');
  	
  	// called when socket opens
  	managerSocket.onopen = function(e) {
  		
+ 		console.log('onOpen');
  	};
  	
  	// called when an error occurs with the socket
- 	manager.onerror = function(e) {
+ 	managerSocket.onerror = function(e) {
  		
+ 		console.log('onerror');
  	};
  	
  	// called when the socket closes
  	managerSocket.onclose = function(e) {
  		
+ 		console.log('onclose');
  	};
  	
  	// called when we receive a message
- 	manager.onmessage = function(e) {
+ 	managerSocket.onmessage = function(e) {
  		
+ 		console.log('onmessage');
  	};
  	
  	// adds new downloads
@@ -45,12 +49,13 @@
  		
  		// TODO check urls
  		
- 		// post the urls
- 		$.post('/download/downloads/', 
- 			{ downloads: urls }, function(data, status) {
-
- 			console.log(data);
- 		});
+ 		// send the urls to the manager
+ 		managerSocket.send(JSON.stringify({
+ 			downloads: urls
+ 		}));
+ 		
+ 		// set the downloads back to nothing
+ 		$('#download-url-area').val('');
  	});
  
- })();
+ });
