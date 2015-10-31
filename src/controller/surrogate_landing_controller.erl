@@ -65,11 +65,9 @@ config('POST', []) ->
 						   	{ok, [{error, Error}, {config, Config}]}
 					end;
 		        {error, Error} ->
-					erlang:display(Error),
 		        	{ok, [{error, Error}, {config, Config}]}
 		    end;
 		Error ->
-			erlang:display(Error),
 			{ok, [{error, Error}, {config, Config}]}
 	end.
 	

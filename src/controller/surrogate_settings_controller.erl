@@ -21,7 +21,6 @@ settings('GET', [], Account) ->
 	{ok, [{account, Account}]};
 
 settings('POST', [], Account) ->
-	erlang:display([{account_id, Account:id()}, {email, Req:post_param("email")}, {password, Req:post_param("password")}]),
 	Premium = premium:new(id, "Rapidgator", Req:post_param("email"), Req:post_param("password"), Account:id()),
 	case premium_lib:premium_login(Premium) of
 		true ->
