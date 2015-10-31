@@ -13,7 +13,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(manager).
--export(name/1, loop/1).
+-export([name/1, loop/1]).
+-include("download_status.hrl").
 
 name(Account) ->
 	list_to_atom(Account:id() ++ "-manager").
@@ -27,7 +28,9 @@ name(Account) ->
 notify_subscriber(Subscriber, Data) ->
 	case is_pid(Subscriber) of
 		true ->
-			Subscriber ! Data
+			Subscriber ! Data;
+		false ->
+			false
 	end.
 
 %%----------------------------------------------------------------------
@@ -38,8 +41,8 @@ notify_subscriber(Subscriber, Data) ->
 %%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account) ->
-	register(manager:name(Account), self()),
-	loop(Account, [], undefined);
+	register(name(Account), self()),
+	loop(Account, [], undefined).
 
 %%----------------------------------------------------------------------
 %% Function: loop/3
@@ -49,7 +52,7 @@ loop(Account) ->
 %%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account, Downloads, Subscriber) ->
-	recieve
+	receive
 
 		%%%%%%%%%%%%%%%%%%%%%
 		%% Client Messages %%
@@ -89,8 +92,8 @@ loop(Account, Downloads, Subscriber) ->
 		% download is not found
 		%%
 		{download_not_found, Download} ->
-			UpdatedDownload = Download::set(status, ?DL_NOT_FOUND),
-			case UpdatedDownload::save() of
+			UpdatedDownload = Download:set(status, ?DL_NOT_FOUND),
+			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
 					notify_subscriber(Subscriber, {on_download_not_found, [{download, Download}]});
 				{error, Errors} ->
@@ -102,8 +105,8 @@ loop(Account, Downloads, Subscriber) ->
 		% download has been accquired
 		%%
 		{download_accquired, Download} ->
-			UpdatedDownload = Download::set(status, ?DL_PENDING),
-			case UpdatedDownload::save() of
+			UpdatedDownload = Download:set(status, ?DL_PENDING),
+			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
 					notify_subscriber(Subscriber, {on_download_accquired, [{download, Download}]});
 				{error, Errors} ->
@@ -115,8 +118,8 @@ loop(Account, Downloads, Subscriber) ->
 		% download has started
 		%%
 		{download_started, Download} ->
-			UpdatedDownload = Download::set(status, ?DL_ACTIVE),
-			case UpdatedDownload::save() of
+			UpdatedDownload = Download:set(status, ?DL_ACTIVE),
+			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
 					notify_subscriber(Subscriber, {on_download_started, [{download, Download}]});
 				{error, Errors} ->
@@ -128,8 +131,8 @@ loop(Account, Downloads, Subscriber) ->
 		% download has finished
 		%%
 		{download_complete, Download} ->
-			UpdatedDownload = Download::set(status, ?DL_COMPLETE),
-			case UpdatedDownload::save() of
+			UpdatedDownload = Download:set(status, ?DL_COMPLETED),
+			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
 					notify_subscriber(Subscriber, {on_download_complete, [{download, Download}]});
 				{error, Errors} ->

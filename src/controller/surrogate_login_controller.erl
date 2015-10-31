@@ -15,6 +15,7 @@
 -compile(export_all).
 
 start_manager(Account) ->
+	erlang:display({manager_info, manager:module_info()}),
 	ManagerName = manager:name(Account),
 	case whereis(ManagerName) of
 		undefined ->

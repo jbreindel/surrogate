@@ -17,20 +17,26 @@
 init() -> 
 	{ok, []}.
 
-handle_join(ServiceURL, WebSocket, State) -> 
+handle_join(ServiceUrl, WebSocket, State) ->
+	erlang:display("handle_join"),
 	{noreply, []}.
 
-handle_incoming(ServiceURL, WebSocket, Message, State) ->
+handle_incoming(ServiceUrl, WebSocket, Message, State) ->
+	erlang:display("handle_incoming"),
 	{noreply, []}.
 
 handle_broadcast(Message, State) ->
+	erlang:display("handle_broadcast"),
 	{noreply, []}.
 
 handle_info(Info, State) ->
-	{noreply, NewState}.
-
-handle_close(Reason, ServiceURL, WebSocket, State) ->
+	erlang:display("handle_info"),
 	{noreply, []}.
 
-terminate(Reason, State) -> 
+handle_close(Reason, ServiceURL, WebSocket, State) ->
+	erlang:display("handle_close"),
+	{noreply, []}.
+
+terminate(Reason, State) ->
+	erlang:display("terminate"),
 	ok. 
