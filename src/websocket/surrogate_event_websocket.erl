@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% FILE: surrogate_download_event_controller.erl
+% FILE: surrogate_event_websocket.erl
 %
 % AUTHOR: Jake Breindel
 % DATE: 
@@ -11,9 +11,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(myapp_myservice_websocket, [Req, SessionId]).
+-module(surrogate_event_websocket, [Req, SessionId]).
 -compile(export_all).
 
 init() -> 
-	
-	{ok, InitialState}.
+	{ok, []}.

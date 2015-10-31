@@ -57,7 +57,8 @@ local.properties
 ## Generated folders
 priv/static/css/
 priv/static/fonts/
-priv/static/js/
+priv/static/js/*.js
+!priv/static/js/ui.js
 
 ## bower lock file
 bower.json~

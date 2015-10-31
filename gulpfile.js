@@ -66,8 +66,8 @@ gulp.task('js', ['bower'], function() {
 	return streamqueue({ objectMode: true },
             gulp.src(BOWER_DIR + 'jquery/dist/jquery.js'),
             gulp.src(BOWER_DIR + 'fastclick/lib/fastclick.js'),
-            gulp.src(BOWER_DIR + 'foundation/js/foundation.js')
-            //gulp.src(JS_DIR + 'ui.js')
+            gulp.src(BOWER_DIR + 'foundation/js/foundation.js'),
+            gulp.src(JS_DIR + 'ui.js')
         )
         .pipe(concat('app.js'))
         .pipe(gulp.dest(JS_DIR));
