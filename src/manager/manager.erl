@@ -13,7 +13,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(manager).
--export(loop/1).
+-export(name/1, loop/1).
+
+name(Account) ->
+	list_to_atom(Account:id() ++ "-manager").
 
 %%----------------------------------------------------------------------
 %% Function: notify_subscriber/2
@@ -35,6 +38,7 @@ notify_subscriber(Subscriber, Data) ->
 %%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account) ->
+	register(manager:name(Account), self()),
 	loop(Account, [], undefined);
 
 %%----------------------------------------------------------------------
