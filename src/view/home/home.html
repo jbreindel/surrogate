@@ -12,16 +12,67 @@
 		  <li class="tab-title active"><a href="#pending">Pending</a></li>
 		  <li class="tab-title"><a href="#completed">Completed</a></li>
 		  <li class="tab-title"><a href="#failed">Failed</a></li>
+		  <li class="tab-title"><a href="#add">Add</a></li>
 		</ul>
 		<div class="tabs-content">
 		  <div class="content active" id="pending">
-		    <p>This is the first panel of the basic tab example. You can place all sorts of content here including a grid.</p>
+		    <div class="row">
+		    	<div class="small-12 columns">
+				    <table>
+				   		<thead>
+						    <tr>
+						      <th>#</th>
+						      <th width="200">Url</th>
+						      <th width="200">Progress</th>
+						      <th width="200">Status</th>
+						    </tr>
+		  				</thead>
+		  				<tbody>
+		  					<tr>
+		  						<td>1</td>
+		  						<td>http://google.com</td>
+		  						<td>50%</td>
+		  						<td>Active</td>
+		  					</tr>
+		  				</tbody>
+				    </table>
+		    	</div>
+		    </div>
 		  </div>
 		  <div class="content" id="completed">
-		    <p>This is the second panel of the basic tab example. This is the second panel of the basic tab example.</p>
+		    <div class="row">
+		    	<div class="small-12 columns">
+		    	
+		    	</div>
+		    </div>
 		  </div>
 		  <div class="content" id="failed">
-		    <p>This is the third panel of the basic tab example. This is the third panel of the basic tab example.</p>
+		    <div class="row">
+		    	<div class="small-12 columns">
+		    	
+		    	</div>
+		    </div>
+		    <table>
+		    
+		    </table>
+		  </div>
+		  <div class="content" id="add">
+		  	<div class="row">
+		    	<div class="small-12 columns">
+		    		Paste in downloads below:
+		    	</div>
+		    </div>
+		    <div class="row">
+		    	<div class="small-12 columns">
+		    		<textarea id="download-add" rows="15" cols="40"></textarea>
+		    	</div>
+		    </div>
+		    <div class="row">
+		    	<div class="small-4 small-push-8 columns">
+		    		<input id="add-button" class="button sgButton right" type="button" value="Add" />
+		    		<div class="clearfix"></div>
+		    	</div>
+		    </div>
 		  </div>
 		</div>
 	</div>

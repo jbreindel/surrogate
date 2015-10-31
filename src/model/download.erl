@@ -11,6 +11,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(download, [Id, DisplayUrl::string(), RealUrl::string(), Status::integer(), Process, File::string(), Length::integer(), Progress::integer(), PremiumId::integer()]).
+-module(download, [Id, DisplayUrl::string(), RealUrl::string(), Status::integer(), File::string(), Length::integer(), Progress::integer(), PremiumId::integer()]).
 -compile(export_all).
 -belongs_to(premium).

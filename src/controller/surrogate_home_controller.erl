@@ -19,15 +19,7 @@ before_(_) ->
     account_lib:require_login(Req).
 
 home('GET', [], Account) ->
-	Premium = Account:premium(),
-	case Req:query_param("filter", "pending") of
-		"pending" ->
-			{ok, [{downloads, Premium:downloads({status, 'in', [?DL_PENDING, ?DL_AQUIRED, ?DL_ACTIVE, ?DL_PAUSED]})}]};
-		"completed" ->
-			{ok, [{downloads, Premium:downloads({status, 'equals', ?DL_COMPLETED})}]};
-		"failed" ->
-			{ok, [{downloads, Premium:downloads({status, 'in', [?DL_FAILED, ?DL_NOT_FOUND]})}]}
-	end;
+	{ok, [{account, Account}]};
 
 home('POST', [], Account) ->
 	Dls = Req:post_param("downloads"),

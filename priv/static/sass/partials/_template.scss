@@ -17,6 +17,7 @@ body {
   
   .content {
   	@include container();
+  	padding-top: 40px;
   }
 }
 
