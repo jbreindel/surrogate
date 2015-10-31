@@ -1,0 +1,39 @@
+{% extends "./template.html" %}
+
+{% block header %}
+	{% include "include/logged-in-header.html" %}
+{% endblock %}
+
+{% block contentTitle %}
+<div class="row">
+	<h3>Settings</h3>
+</div>
+{% endblock %}
+
+{% block content %}
+	<div class="settings">
+		<form action="/settings/settings" method="POST">
+			<div class="row">
+				<div class="small-12 columns">
+					Add a new premium account:
+				</div>
+			</div>
+			<div class="row">
+				<div class="small-12 columns">
+					<label {% if error.emailError %}class="error"{% endif %}>Email
+						<input type="text" name="email" placeholder="email" value="{{ premium.email }}" />
+      				</label>
+      				{% if error.emailError %}<small class="error">{{ error.emailError }}</small>{% endif %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="small-12 columns">
+					<label {% if error.passwordError %}class="error"{% endif %}>Email
+						<input type="password" name="email" placeholder="email" value="" />
+      				</label>
+      				{% if error.passwordError %}<small class="error">{{ error.passwordError }}</small>{% endif %}
+				</div>
+			</div>
+		</form>
+	</div>
+{% endblock %}
