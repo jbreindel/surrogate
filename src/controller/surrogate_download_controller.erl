@@ -27,8 +27,5 @@ downloads('GET', [], Account) ->
 			{ok, [{downloads, Premium:downloads({status, 'equals', ?DL_COMPLETED})}]};
 		"failed" ->
 			{ok, [{downloads, Premium:downloads({status, 'in', [?DL_FAILED, ?DL_NOT_FOUND]})}]}
-	end;
-
-downloads('POST', [], Account) ->
-	{ok, []}.
+	end.
 

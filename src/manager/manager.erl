@@ -59,14 +59,13 @@ loop(Account, Downloads, Subscriber) ->
 		% subscriber connects to manager
 		%%
 		{subscriber_connect, Subscriber} ->
-			notify_subscriber(Subscriber, {downloads, Downloads}, {downloads, Downloads}),
+			notify_subscriber(Subscriber, {downloads, Downloads}),
 			loop(Account, Downloads, Subscriber);
 
 		%%
 		% subscriber sent links to the manager
 		%%
-		{subscriber_links, Links} ->
-			handle_links(Account, Links),
+		{subscriber_downloads, Downloads} ->
 			loop(Account, Downloads, Subscriber);
 		
 		%%

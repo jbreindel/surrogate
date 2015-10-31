@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% FILE: surrogate_event_websocket.erl
+% FILE: surrogate_manager_websocket.erl
 %
 % AUTHOR: Jake Breindel
 % DATE: 
@@ -11,7 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(surrogate_event_websocket, [Req, SessionId]).
+-module(surrogate_manager_websocket, [Req, SessionId]).
 -compile(export_all).
 
 init() -> 
