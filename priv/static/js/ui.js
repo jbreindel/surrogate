@@ -45,7 +45,7 @@
  	$('#add-downloads').click(function(e) {
  	
  		// get the urls
- 		var urls = $('#download-url-area').val();
+ 		var urls = $('#download-url-area').val().split('\n');
  		
  		// TODO check urls
  		

@@ -25,23 +25,22 @@
 	terminate/2]).
 
 init() -> 
-	erlang:display("Initializing Websocket!"),
 	{ok, []}.
 
 handle_join(ServiceUrl, WebSocket, State) ->
-	erlang:display("handle_join"),
-	{noreply, [{message, "Joined!"}]}.
+	{noreply, []}.
 
 handle_incoming(ServiceUrl, WebSocket, Message, State) ->
-	erlang:display("handle_incoming"),
-	{noreply, [{message, "Received Message!"}]}.
+	Downloads = mochijson:decode(binary_to_list(Message)),
+	erlang:display({message, Downloads}),
+	{noreply, []}.
 
 handle_broadcast(Message, State) ->
-	erlang:display("handle_broadcast"),
+	erlang:display({message, Message}),
 	{noreply, []}.
 
 handle_info(Info, State) ->
-	erlang:display("handle_info"),
+	erlang:display({handle_info, Info}),
 	{noreply, []}.
 
 handle_close(Reason, ServiceURL, WebSocket, State) ->
