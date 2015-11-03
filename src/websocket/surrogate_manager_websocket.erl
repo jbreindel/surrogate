@@ -60,10 +60,32 @@ subscriber_message(Account, Message) ->
 			{struct, MessageJson} = mochijson:decode(binary_to_list(Message)),
 			erlang:display({message, MessageJson})
 	end.
+
+parse_cookies([], CookieProps) ->
+	CookieProps;
+parse_cookies([Cookie|Cookies], CookieProps) ->
+	case string:tokens(Cookie, "=") of
+		[CookieName|CookieValue] ->
+			parse_cookies(Cookies, CookieProps ++ {CookieName, CookieValue});
+		_ ->
+			parse_cookies(Cookies, CookieProps)
+	end.
+
+http_cookie(Name, Req) ->	
+	{Headers, HttpReq} = cowboy_req:headers(Req),
+	case proplists:is_defined(<<"cookie">>, Headers) of
+		true ->
+			BinCookies = proplists:get_value(<<"cookie">>, Headers),
+			CookieStr = binary_to_list(BinCookies),
+			Cookies = string:tokens(CookieStr, ";"),
+			parse_cookies(Cookies, []);
+		false ->
+			erlang:display(Headers)
+	end.
 		
 handle_join(ServiceUrl, WebSocket, State) ->
 	#state{users = Users} = State,
-	erlang:display({cookie, cowboy_req:header("Cookie", Req)}),
+	erlang:display(http_cookie(<<"cookie">>, Req)),
 	case Req:cookie("account_id") of
 		undefined -> 
 			{noreply, State};
@@ -86,7 +108,7 @@ handle_incoming(ServiceUrl, WebSocket, Message, State) ->
 	#state{users = Users} = State,
 	case Users:find(WebSocket) of
 		{ok, AccountProps} ->
-			case proplists:is_defined(account) of
+			case proplists:is_defined(account, AccountProps) of
 				true ->
 					Account = proplists:get_value(account, AccountProps),
 					subscriber_message(Account, Message),
