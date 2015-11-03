@@ -65,7 +65,7 @@ parse_cookies([], CookieProps) ->
 	CookieProps;
 parse_cookies([Cookie|Cookies], CookieProps) ->
 	case string:tokens(Cookie, "=") of
-		[CookieName|CookieValue] ->
+		[CookieName, CookieValue] ->
 			parse_cookies(Cookies, CookieProps ++ {CookieName, CookieValue});
 		_ ->
 			parse_cookies(Cookies, CookieProps)
