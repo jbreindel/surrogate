@@ -16,7 +16,7 @@
 
 start_manager(Account) ->
 	erlang:display({manager_info, manager:module_info()}),
-	ManagerName = manager:name(Account),
+	ManagerName = manager:pid_name(Account),
 	case whereis(ManagerName) of
 		undefined ->
 			spawn(manager, loop, [Account]);
@@ -37,6 +37,7 @@ login('GET', []) ->
 						true ->
 							{ok, [{account, Account}]};
 						false ->
+							erlang:display([{account_session, Account:session_identifier()}, {req_session, Req:cookie("session_id")}]),
 							{redirect, "/home/home"}
 					end
 			end

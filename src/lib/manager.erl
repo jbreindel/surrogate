@@ -13,10 +13,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(manager).
--export([name/1, loop/1]).
+-export([pid_name/1, loop/1]).
 -include("download_status.hrl").
 
-name(Account) ->
+pid_name(Account) ->
 	list_to_atom(Account:id() ++ "-manager").
 
 %%----------------------------------------------------------------------
@@ -41,7 +41,7 @@ notify_subscriber(Subscriber, Data) ->
 %%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account) ->
-	register(name(Account), self()),
+	register(pid_name(Account), self()),
 	loop(Account, [], undefined).
 
 %%----------------------------------------------------------------------
