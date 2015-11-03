@@ -34,9 +34,9 @@ login('GET', []) ->
 					{redirect, "/"};
                 Account ->
 					case Account:session_identifier() =:= Req:cookie("session_id") of
-						false ->
-							{ok, [{account, Account}]};
 						true ->
+							{ok, [{account, Account}]};
+						false ->
 							{redirect, "/home/home"}
 					end
 			end
