@@ -14,16 +14,6 @@
 -module(surrogate_login_controller, [Req]).
 -compile(export_all).
 
-start_manager(Account) ->
-	erlang:display({manager_info, manager:module_info()}),
-	ManagerName = manager:pid_name(Account),
-	case whereis(ManagerName) of
-		undefined ->
-			spawn(manager, loop, [Account]);
-		Pid ->
-			true
-	end.
-
 login('GET', []) ->
 	case Req:cookie("account_id") of
 		undefined -> 
@@ -49,7 +39,6 @@ login('POST', []) ->
 		[Account] ->
 			case Account:check_password(Req:post_param("password")) of
                 true ->
-					start_manager(Account),
                     {redirect, proplists:get_value("redirect", Req:post_params(), "/home/home"), Account:login_cookies()};
                 false ->
                     {ok, [{error, "Bad name/password combination"}]}

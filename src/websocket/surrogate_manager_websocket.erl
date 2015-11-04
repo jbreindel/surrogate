@@ -33,8 +33,7 @@ subscriber_message(Account, Message) ->
 		false ->
 			false;
 		Pid ->
-			{struct, MessageJson} = mochijson:decode(binary_to_list(Message)),
-			erlang:display({message, MessageJson})
+			Pid ! {websocket_message, Message}
 	end.
 
 parse_cookies([], CookieProps) ->
@@ -110,8 +109,21 @@ handle_info(Info, State) ->
 
 handle_close(Reason, ServiceURL, WebSocket, State) ->
 	#state{users = Users} = State,
+	case Users:find(WebSocket) of
+		{ok, AccountProps} ->
+			case proplists:is_defined(account, AccountProps) of
+				true ->
+					Account = proplists:get_value(account, AccountProps),
+					subscriber_message(Account, {subscriber_disconnect, undefined}),
+					{noreply, State};
+				false ->
+					{noreply, State}
+			end;
+		error ->
+			erlang:display({websocket, WebSocket}),
+			{noreply, State}
+	end,
 	{noreply, #state{users = dict:erase(WebSocket, Users)}}.
 
 terminate(Reason, State) ->
-	erlang:display("terminate"),
 	ok.

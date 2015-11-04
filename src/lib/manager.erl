@@ -52,6 +52,7 @@ loop(Account) ->
 %%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account, Downloads, Subscriber) ->
+	erlang:display({reccevivng, recive}),
 	receive
 
 		%%%%%%%%%%%%%%%%%%%%%
@@ -62,20 +63,22 @@ loop(Account, Downloads, Subscriber) ->
 		% subscriber connects to manager
 		%%
 		{subscriber_connect, Subscriber} ->
-			notify_subscriber(Subscriber, {downloads, Downloads}),
+			erlang:display({subscriber_connect, Subscriber}),
+			notify_subscriber(Subscriber, {manager_downloads, Downloads}),
 			loop(Account, Downloads, Subscriber);
 
 		%%
 		% subscriber sent links to the manager
 		%%
 		{subscriber_downloads, Downloads} ->
+			erlang:display({downloads, Downloads}),
 			loop(Account, Downloads, Subscriber);
 		
 		%%
 		% called when the subscriber wants to refresh their downloads
 		%%
 		{subscriber_refresh, Subscriber} ->
-			notify_subscriber(Subscriber, {downloads, Downloads}),
+			notify_subscriber(Subscriber, {manager_downloads, Downloads}),
 			loop(Account, Downloads, Subscriber);
 
 		%%
@@ -95,9 +98,9 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download:set(status, ?DL_NOT_FOUND),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {on_download_not_found, [{download, Download}]});
+					notify_subscriber(Subscriber, {manager_on_download_not_found, [{download, Download}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 		
@@ -108,9 +111,9 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download:set(status, ?DL_PENDING),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {on_download_accquired, [{download, Download}]});
+					notify_subscriber(Subscriber, {manager_on_download_accquired, [{download, Download}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 			
@@ -121,9 +124,9 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download:set(status, ?DL_ACTIVE),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {on_download_started, [{download, Download}]});
+					notify_subscriber(Subscriber, {manager_on_download_started, [{download, Download}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 			
@@ -134,10 +137,13 @@ loop(Account, Downloads, Subscriber) ->
 			UpdatedDownload = Download:set(status, ?DL_COMPLETED),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {on_download_complete, [{download, Download}]});
+					notify_subscriber(Subscriber, {manager_on_download_complete, [{download, Download}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
-			loop(Account, Downloads, Subscriber)
+			loop(Account, Downloads, Subscriber);
+	
+	Message ->
+			erlang:display({message, Message})
 			
 	end.

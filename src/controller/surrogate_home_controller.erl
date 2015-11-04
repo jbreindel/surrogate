@@ -18,8 +18,18 @@
 before_(_) ->
     account_lib:require_login(Req).
 
+start_manager(Account) ->,
+
+
 home('GET', [], Account) ->
-	{ok, [{account, Account}]};
+	ManagerName = manager:pid_name(Account),
+	case whereis(ManagerName) of
+		undefined ->
+			spawn(manager, loop, [Account]),
+			{ok, [{account, Account}]}
+		Pid ->
+			{ok, [{account, Account}]}
+	end;
 
 home('POST', [], Account) ->
 	Dls = Req:post_param("downloads"),
