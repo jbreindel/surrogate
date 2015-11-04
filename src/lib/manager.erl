@@ -18,6 +18,34 @@
 
 pid_name(Account) ->
 	list_to_atom(Account:id() ++ "-manager").
+	
+alive(Account) ->
+	ManagerName = pid_name(Account),
+	case whereis(ManagerName) of 
+		undefined ->
+			false;
+		Pid ->
+			Pid
+	end.
+
+start(Account) ->
+	erlang:display({manager_start, Account}),
+	case alive(Account) of 
+		false ->
+			erlang:process_flag(trap_exit, true),
+			ManagerPid = erlang:spawn_link(?MODULE, loop, [Account]),
+			receive
+		        {'EXIT', ManagerPid, normal} -> % not a crash
+		            {noreply, undefined};
+		        {'EXIT', ManagerPid, shutdown} -> % manual shutdown, not a crash
+		            {noreply, undefined};
+		        {'EXIT', ManagerPid, _} ->
+		            start(Account)
+    		end;
+		Pid ->
+			erlang:display({pid, Pid}),
+			{noreply, undefined}
+	end.
 
 %%----------------------------------------------------------------------
 %% Function: notify_subscriber/2
