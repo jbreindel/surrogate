@@ -33,7 +33,7 @@ subscriber_message(Account, Message) ->
 		false ->
 			false;
 		Pid ->
-			Pid ! {websocket_message, Message}
+			Pid ! Message
 	end.
 
 parse_cookies([], CookieProps) ->
@@ -89,7 +89,7 @@ handle_incoming(ServiceUrl, WebSocket, Message, State) ->
 			case proplists:is_defined(account, AccountProps) of
 				true ->
 					Account = proplists:get_value(account, AccountProps),
-					subscriber_message(Account, Message),
+					subscriber_message(Account, {websocket_message, Message}),
 					{noreply, State};
 				false ->
 					{noreply, State}
@@ -114,7 +114,7 @@ handle_close(Reason, ServiceURL, WebSocket, State) ->
 			case proplists:is_defined(account, AccountProps) of
 				true ->
 					Account = proplists:get_value(account, AccountProps),
-					subscriber_message(Account, {subscriber_disconnect, undefined}),
+					subscriber_message(Account, {websocket_close, undefined}),
 					{noreply, State};
 				false ->
 					{noreply, State}

@@ -52,7 +52,7 @@ start(Account, WebSocket) ->
 		            start(Account, WebSocket)
     		end;
 		Pid ->
-			erlang:display({pid, Pid}),
+			erlang:display({subscriber_pid, Pid}),
 			{noreply, undefined}
 	end.
 
@@ -61,8 +61,7 @@ loop(Account, WebSocket) ->
 	ManagerName = manager:pid_name(Account),
 	case whereis(ManagerName) of
 		undefined ->
-			ManagerPid = spawn(manager, loop, [Account, Subscriber]),
-			loop(Account, WebSocket, ManagerPid);
+			undefined;
 		Manager ->
 			notify_manager(Manager, {subscriber_connect, self()}),
 			loop(Account, WebSocket, Manager)
@@ -88,7 +87,8 @@ loop(Account, WebSocket, Manager) ->
 		
 		{websocket_close, _} ->
 			notify_manager(Manager, {subscriber_disconnect, undefined}),
-			kill;
+			
+			exit(normal);
 		
 		%%%%%%%%%%%%%%%%%%%%%%
 		%% Manager Messages %%

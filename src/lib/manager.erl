@@ -13,7 +13,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(manager).
--export([pid_name/1, loop/1]).
+-export([pid_name/1, start/1, loop/1]).
 -include("download_status.hrl").
 
 pid_name(Account) ->
@@ -43,7 +43,7 @@ start(Account) ->
 		            start(Account)
     		end;
 		Pid ->
-			erlang:display({pid, Pid}),
+			erlang:display({manager_pid, Pid}),
 			{noreply, undefined}
 	end.
 
@@ -80,7 +80,6 @@ loop(Account) ->
 %%			Subscriber - Process monitoring events
 %%----------------------------------------------------------------------
 loop(Account, Downloads, Subscriber) ->
-	erlang:display({reccevivng, recive}),
 	receive
 
 		%%%%%%%%%%%%%%%%%%%%%
@@ -90,22 +89,22 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% subscriber connects to manager
 		%%
-		{subscriber_connect, Subscriber} ->
-			erlang:display({subscriber_connect, Subscriber}),
-			notify_subscriber(Subscriber, {manager_downloads, Downloads}),
-			loop(Account, Downloads, Subscriber);
+		{subscriber_connect, SubscriberPid} ->
+			erlang:display({subscriber_connect, SubscriberPid}),
+			notify_subscriber(SubscriberPid, {manager_downloads, Downloads}),
+			loop(Account, Downloads, SubscriberPid);
 
 		%%
 		% subscriber sent links to the manager
 		%%
-		{subscriber_downloads, Downloads} ->
-			erlang:display({downloads, Downloads}),
-			loop(Account, Downloads, Subscriber);
+		{subscriber_downloads, DownloadLinkArray} ->
+			erlang:display({downloads, DownloadLinkArray}),
+			loop(Account, DownloadLinkArray, Subscriber);
 		
 		%%
 		% called when the subscriber wants to refresh their downloads
 		%%
-		{subscriber_refresh, Subscriber} ->
+		{subscriber_refresh, _} ->
 			notify_subscriber(Subscriber, {manager_downloads, Downloads}),
 			loop(Account, Downloads, Subscriber);
 

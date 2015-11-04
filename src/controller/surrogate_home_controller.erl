@@ -22,8 +22,8 @@ home('GET', [], Account) ->
 	ManagerName = manager:pid_name(Account),
 	case whereis(ManagerName) of
 		undefined ->
-			spawn(manager, loop, [Account]),
-			{ok, [{account, Account}]}
+			spawn(manager, start, [Account]),
+			{ok, [{account, Account}]};
 		Pid ->
 			{ok, [{account, Account}]}
 	end;
