@@ -18,9 +18,6 @@
 before_(_) ->
     account_lib:require_login(Req).
 
-start_manager(Account) ->,
-
-
 home('GET', [], Account) ->
 	ManagerName = manager:pid_name(Account),
 	case whereis(ManagerName) of
