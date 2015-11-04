@@ -12,8 +12,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(manager).
--export([pid_name/1, loop/2]).
+-module(subscriber).
+-export([pid_name/1, alive/1, start/2, loop/2]).
 -include("download_status.hrl").
 
 pid_name(Account) ->
@@ -25,6 +25,33 @@ notify_manager(Manager, Data) ->
 			Manager ! Data;
 		false ->
 			false
+	end.
+
+alive(Account) ->
+	SubscriberName = pid_name(Account),
+	erlang:display({account, Account}, {subscriber_name, SubscriberName}),
+	case whereis(SubscriberName) of 
+		undefined ->
+			false;
+		Pid ->
+			Pid
+	end.
+
+start(Account, WebSocket) ->
+	case alive(Account) of 
+		false ->
+			erlang:process_flag(trap_exit, true),
+			SubscriberPid = erlang:spawn_link(?MODULE, loop, [Account, WebSocket]),
+			receive
+		        {'EXIT', SubscriberPid, normal} -> % not a crash
+		            {noreply, undefined};
+		        {'EXIT', SubscriberPid, shutdown} -> % manual shutdown, not a crash
+		            {noreply, undefined};
+		        {'EXIT', SubscriberPid, _} ->
+		            start(Account, WebSocket)
+    		end;
+		Pid ->
+			{noreply, undefined}
 	end.
 
 loop(Account, WebSocket) ->

@@ -16,7 +16,8 @@
 
 -record(state,{users}).
 
--export([init/0, 
+-export([
+	init/0, 
 	handle_incoming/4, 
 	handle_join/3,
     handle_broadcast/2,
@@ -27,33 +28,8 @@
 init() -> 
 	{ok, #state{users = dict:new()}}.
 
-subscriber_alive(Account) ->
-	SubscriberName = subscriber:pid_name(Account),
-	case whereis(SubscriberName) of 
-		undefined ->
-			false;
-		Pid ->
-			Pid
-	end.
-
-subscriber_start(Account, WebSocket) ->
-	case subscriber_alive(Account) of 
-		false ->
-			spawn_link(subscriber, loop, [Account, WebSocket]),
-			receive
-		        {'EXIT', Pid, normal} -> % not a crash
-		            {noreply, undefined};
-		        {'EXIT', Pid, shutdown} -> % manual shutdown, not a crash
-		            {noreply, undefined};
-		        {'EXIT', Pid, _} ->
-		            subscriber_start(Account, WebSocket)
-    		end;
-		Pid ->
-			{noreply, undefined}
-	end.
-
 subscriber_message(Account, Message) ->
-	case subscriber_alive(Account) of
+	case subscriber:alive(Account) of
 		false ->
 			false;
 		Pid ->
@@ -65,13 +41,16 @@ parse_cookies([], CookieProps) ->
 	CookieProps;
 parse_cookies([Cookie|Cookies], CookieProps) ->
 	case string:tokens(Cookie, "=") of
-		[CookieName, CookieValue] ->
-			parse_cookies(Cookies, CookieProps ++ {CookieName, CookieValue});
+		[Name|CookieValue] ->
+			[Value] = CookieValue,
+			ParsedName = re:replace(Name, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
+			ParsedValue = re:replace(Value, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
+			parse_cookies(Cookies, CookieProps ++ [{ParsedName, ParsedValue}]);
 		_ ->
 			parse_cookies(Cookies, CookieProps)
 	end.
 
-http_cookie(Name, Req) ->	
+http_cookies(Req) ->	
 	{Headers, HttpReq} = cowboy_req:headers(Req),
 	case proplists:is_defined(<<"cookie">>, Headers) of
 		true ->
@@ -85,8 +64,8 @@ http_cookie(Name, Req) ->
 		
 handle_join(ServiceUrl, WebSocket, State) ->
 	#state{users = Users} = State,
-	erlang:display(http_cookie(<<"cookie">>, Req)),
-	case Req:cookie("account_id") of
+	Cookies = http_cookies(Req),
+	case proplists:get_value("account_id", Cookies) of
 		undefined -> 
 			{noreply, State};
 		Id ->
@@ -94,9 +73,9 @@ handle_join(ServiceUrl, WebSocket, State) ->
                 undefined -> 
 					{noreply, State};
                 Account ->
-					case Account:session_identifier() =:= Req:cookie("session_id") of
+					case Account:session_identifier() =:= proplists:get_value("session_id", Cookies) of
 						true ->
-							spawn(?MODULE, subscriber_start, [Account, WebSocket]),
+							erlang:spawn(subscriber, start, [Account, WebSocket]),
 							{noreply, #state{users = dict:store(WebSocket, [{account, Account}], Users)}};
 						false ->
 							{noreply, State}
