@@ -15,17 +15,22 @@
 -compile(export_all).
 -include("download_status.hrl").
 
-save_downloads(Premium, [], SavedDls) ->
-	{ok, lists:reverse(SavedDls)};
+save_downloads(Premium, Links) ->
+	save_downloads(Premium, Links, []).
 
-save_downloads(Premium, [Link | Links], SavedDls) ->
+save_downloads(Premium, [], SavedDls) ->
+	{ok, SavedDls};
+save_downloads(Premium, [Link|Links], SavedDls) ->
 	RealUrl = "",
 	File = "",
 	Length = 0,
-	Download = download:new(id, Link, RealUrl, ?DL_PENDING, File, Length, 0, 0, Premium:id()),
+	Progress = 0,
+	CreatedTime = os:timestamp(),
+	erlang:display([{id, id}, {link, Link}, {real_url, RealUrl}, {file, File}, {length, Length}, {progress, Progress}, {created_time, CreatedTime}, {premium_id, Premium:id()}]),
+	Download = download:new(id, Link, RealUrl, ?DL_PENDING, File, Length, Progress, CreatedTime, Premium:id()),
 	case Download:save() of
 		{ok, SavedDownload} ->
-			SavedDlList = [SavedDownload | SavedDls],
+			SavedDlList = SavedDls ++ SavedDownload,
     		save_downloads(Premium, Links, SavedDlList);				
 		{error, Errors} ->
 			{error, Errors}

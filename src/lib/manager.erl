@@ -98,7 +98,15 @@ loop(Account, Downloads, Subscriber) ->
 		% subscriber sent links to the manager
 		%%
 		{subscriber_downloads, DownloadLinkArray} ->
-			erlang:display({downloads, DownloadLinkArray}),
+			erlang:display({manager_downloads_account, Account}),
+			case download_lib:save_downloads(Account:first_premium(), DownloadLinkArray) of
+				{ok, SavedDownloads} ->
+					erlang:display({manager_downloads_saved, SavedDownloads}),
+					notify_subscriber(Subscriber, {manager_on_downloads_saved, SavedDownloads});
+				{error, Error} ->
+					erlang:display({manager_downloads_error, Error}),
+					notify_subscriber(Subscriber, {manager_on_downloads_error, Error})
+			end,
 			loop(Account, DownloadLinkArray, Subscriber);
 		
 		%%

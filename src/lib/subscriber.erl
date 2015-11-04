@@ -87,7 +87,6 @@ loop(Account, WebSocket, Manager) ->
 		
 		{websocket_close, _} ->
 			notify_manager(Manager, {subscriber_disconnect, undefined}),
-			
 			exit(normal);
 		
 		%%%%%%%%%%%%%%%%%%%%%%
@@ -97,8 +96,14 @@ loop(Account, WebSocket, Manager) ->
 		{manager_downloads, Downloads} ->
 			erlang:display({manager_downloads, Downloads});
 
-		_ ->
-			erlang:display("Message")
+		{manager_downloads_saved, Downloads} ->
+			erlang:display({manager_downloads_saved, Downloads});
+		
+		{manager_downloads_error, Error} ->
+			erlang:display({manager_downloads_error, Error});
+
+		Message ->
+			erlang:display(Message)
 	end,
 	loop(Account, WebSocket, Manager).
 	

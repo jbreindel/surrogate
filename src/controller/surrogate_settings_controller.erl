@@ -26,7 +26,7 @@ settings('POST', [], Account) ->
 		true ->
 			case Premium:save() of
 				{ok, SavedPremium} ->
-					%% TODO add to flashbag
+					%% TODO add to flashbag, restart manager
 					{redirect, "/settings/settings"};
 		        {error, Error} ->
 					{ok, [{error, Error}]}
