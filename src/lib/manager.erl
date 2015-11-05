@@ -61,9 +61,9 @@ notify_subscriber(Subscriber, Data) ->
 			false
 	end.
 
-next_download(Downloads, NumDownloads) when Downloads:size() >= NumDownloads ->
+next_accquired_download(Downloads, NumDownloads) when Downloads:size() >= NumDownloads ->
 	ok.
-next_download(Downloads, NumDownloads) when Downloads:size() < NumDownloads ->
+next_accquired_download(Downloads, NumDownloads) when Downloads:size() < NumDownloads ->
 	case boss_db:find(download, [{status, equals, ?DL_AQUIRED}], [{order_by, created_time}]) of
 		[] ->
 			undefined;
@@ -77,7 +77,7 @@ execute(Downloads) ->
 			ok;
 		Config ->
 			NumDownloads = Config:num_simultaneous_downloads(),
-			case next_download(Downloads, NumDownloads) of
+			case next_accquired_download(Downloads, NumDownloads) of
 				ok ->
 					ok;
 				undefined ->
