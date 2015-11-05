@@ -61,6 +61,16 @@ notify_subscriber(Subscriber, Data) ->
 			false
 	end.
 
+next_download(Account, NumDownloads, Downloads) when Downloads:size() >= NumDownloads ->
+	ok.
+next_download(Account, NumDownloads, Downloads) when Downloads:size() < NumDownloads ->
+	case boss_db:find(download, [{status, equals, ?DL_AQUIRED}], [{order_by, created_time}]) of
+		[] ->
+			ok;
+		[Download|Downloads] ->
+			ok
+	end.
+
 %%----------------------------------------------------------------------
 %% Function: loop/1
 %% Purpose: Loops the manager with an Account and default options
