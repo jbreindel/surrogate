@@ -28,6 +28,15 @@ notify_manager(Manager, Data) ->
 			false
 	end.
 
+notify_websocket(WebSocket, Data) ->
+	case is_pid(WebSocket) of
+		true ->
+			erlang:display({notify_websocket, Data}),
+			WebSocket ! Data;
+		false ->
+			false
+	end.
+
 alive(Account) ->
 	SubscriberName = pid_name(Account),
 	case whereis(SubscriberName) of 
@@ -94,10 +103,14 @@ loop(Account, WebSocket, Manager) ->
 		%%%%%%%%%%%%%%%%%%%%%%
 
 		{manager_downloads, Downloads} ->
-			erlang:display({manager_downloads, Downloads});
+			erlang:display({manager_downloads, Downloads}),
+			WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
+			notify_websocket(WebSocket, {text, binary_to_list(WebSocketJson)});
 
 		{manager_downloads_saved, Downloads} ->
-			erlang:display({manager_downloads_saved, Downloads});
+			WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
+			erlang:display({manager_downloads_saved, binary_to_list(WebSocketJson)}),
+			notify_websocket(WebSocket, {text, binary_to_list(WebSocketJson)});
 		
 		{manager_downloads_error, Error} ->
 			erlang:display({manager_downloads_error, Error});

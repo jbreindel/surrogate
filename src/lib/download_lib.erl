@@ -30,7 +30,7 @@ save_downloads(Premium, [Link|Links], SavedDls) ->
 	Download = download:new(id, Link, RealUrl, ?DL_PENDING, File, Length, Progress, CreatedTime, Premium:id()),
 	case Download:save() of
 		{ok, SavedDownload} ->
-			SavedDlList = SavedDls ++ SavedDownload,
+			SavedDlList = SavedDls ++ [SavedDownload],
     		save_downloads(Premium, Links, SavedDlList);				
 		{error, Errors} ->
 			{error, Errors}

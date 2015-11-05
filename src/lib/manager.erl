@@ -70,7 +70,7 @@ notify_subscriber(Subscriber, Data) ->
 %%----------------------------------------------------------------------
 loop(Account) ->
 	register(pid_name(Account), self()),
-	loop(Account, [], undefined).
+	loop(Account, dict:new(), undefined).
 
 %%----------------------------------------------------------------------
 %% Function: loop/3
@@ -91,7 +91,7 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		{subscriber_connect, SubscriberPid} ->
 			erlang:display({subscriber_connect, SubscriberPid}),
-			notify_subscriber(SubscriberPid, {manager_downloads, Downloads}),
+			notify_subscriber(SubscriberPid, {manager_downloads, Downloads:to_list()}),
 			loop(Account, Downloads, SubscriberPid);
 
 		%%
