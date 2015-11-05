@@ -61,14 +61,31 @@ notify_subscriber(Subscriber, Data) ->
 			false
 	end.
 
-next_download(Account, NumDownloads, Downloads) when Downloads:size() >= NumDownloads ->
+next_download(Downloads, NumDownloads) when Downloads:size() >= NumDownloads ->
 	ok.
-next_download(Account, NumDownloads, Downloads) when Downloads:size() < NumDownloads ->
+next_download(Downloads, NumDownloads) when Downloads:size() < NumDownloads ->
 	case boss_db:find(download, [{status, equals, ?DL_AQUIRED}], [{order_by, created_time}]) of
 		[] ->
-			ok;
+			undefined;
 		[Download|Downloads] ->
-			ok
+			Download
+	end.
+
+execute(Downloads) ->
+	case boss_db:find_first(config) of
+		undefined ->
+			ok;
+		Config ->
+			NumDownloads = Config:num_simultaneous_downloads(),
+			case next_download(Downloads, NumDownloads) of
+				ok ->
+					ok;
+				undefined ->
+					ok;
+				Download ->
+					%% spawn acquisition process
+					ok
+			end
 	end.
 
 %%----------------------------------------------------------------------
@@ -112,7 +129,8 @@ loop(Account, Downloads, Subscriber) ->
 			case download_lib:save_downloads(Account:first_premium(), DownloadLinkArray) of
 				{ok, SavedDownloads} ->
 					erlang:display({manager_downloads_saved, SavedDownloads}),
-					notify_subscriber(Subscriber, {manager_on_downloads_saved, SavedDownloads});
+					notify_subscriber(Subscriber, {manager_on_downloads_saved, SavedDownloads}),
+					
 				{error, Error} ->
 					erlang:display({manager_downloads_error, Error}),
 					notify_subscriber(Subscriber, {manager_on_downloads_error, Error})
