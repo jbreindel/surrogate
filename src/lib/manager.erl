@@ -83,7 +83,7 @@ execute(Downloads) ->
 				undefined ->
 					ok;
 				Download ->
-					%% spawn acquisition process
+					%% spawn execution process
 					ok
 			end
 	end.
