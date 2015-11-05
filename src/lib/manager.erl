@@ -118,6 +118,7 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		{subscriber_connect, SubscriberPid} ->
 			erlang:display({subscriber_connect, SubscriberPid}),
+			%% TODO refresh account
 			notify_subscriber(SubscriberPid, {manager_downloads, Downloads:to_list()}),
 			loop(Account, Downloads, SubscriberPid);
 
