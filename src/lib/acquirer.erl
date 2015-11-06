@@ -13,8 +13,45 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(acquirer).
--export([acquire/3]).
+-export([start/2, acquire/2, acquire_downloads/2]).
+-include("download_status.hrl").
 
-acquire(Manager, Premium, Download) ->
-	ok.
-	%%http:request(get, {Download:get_display_url(), [{"User-Agent", UA}]}, [], []).
+notify_manager(Account, Data) ->
+	case manager:alive(Account) of
+		false ->
+			false;
+		Pid ->
+			Pid ! Data
+	end.
+
+start(Account, Downloads) ->
+	erlang:display({start, Downloads}),
+	erlang:process_flag(trap_exit, true),
+	AcquirerPid = erlang:spawn_link(?MODULE, acquire_downloads, [Account, Downloads]),
+	receive
+		{'EXIT', AcquirerPid, normal} -> % not a crash
+			{noreply, undefined};
+		{'EXIT', AcquirerPid, shutdown} -> % manual shutdown, not a crash
+			{noreply, undefined};
+		{'EXIT', AcquirerPid, _} ->
+			start(Account, Downloads)
+	end.
+
+acquire(Account, Download) ->
+	case httpc:request(Download:display_url()) of
+		{ok, {{Version, 200, ReasonPhrase}, Headers, Body}} ->
+			erlang:display(binary_to_list(Body));
+		_ ->
+			error
+	end.
+
+acquire_downloads(Account, []) ->
+	ok;
+acquire_downloads(Account, [Download|Downloads]) ->
+	case Download:status() of
+		?DL_PENDING ->
+			erlang:spawn(?MODULE, acquire, [Account, Download]);
+		_ ->
+			ok
+	end,
+	acquire_downloads(Account, Downloads).

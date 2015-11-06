@@ -12,7 +12,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -define(DL_PENDING, 0).
--define(DL_AQUIRED, 1).
+-define(DL_ACQUIRED, 1).
 -define(DL_ACTIVE, 2).
 -define(DL_PAUSED, 3).
 -define(DL_COMPLETED, 4).

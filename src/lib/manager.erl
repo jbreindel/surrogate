@@ -61,32 +61,32 @@ notify_subscriber(Subscriber, Data) ->
 			false
 	end.
 
-next_accquired_download(Downloads, NumDownloads) when Downloads:size() >= NumDownloads ->
-	ok.
-next_accquired_download(Downloads, NumDownloads) when Downloads:size() < NumDownloads ->
-	case boss_db:find(download, [{status, equals, ?DL_AQUIRED}], [{order_by, created_time}]) of
-		[] ->
-			undefined;
-		[Download|Downloads] ->
-			Download
-	end.
-
-execute(Downloads) ->
-	case boss_db:find_first(config) of
-		undefined ->
-			ok;
-		Config ->
-			NumDownloads = Config:num_simultaneous_downloads(),
-			case next_accquired_download(Downloads, NumDownloads) of
-				ok ->
-					ok;
-				undefined ->
-					ok;
-				Download ->
-					%% spawn execution process
-					ok
-			end
-	end.
+%% next_accquired_download(Downloads, NumDownloads) when Downloads:size() >= NumDownloads ->
+%% 	ok.
+%% next_accquired_download(Downloads, NumDownloads) when Downloads:size() < NumDownloads ->
+%% 	case boss_db:find(download, [{status, equals, ?DL_ACQUIRED}], [{order_by, created_time}]) of
+%% 		[] ->
+%% 			undefined;
+%% 		[Download|Downloads] ->
+%% 			Download
+%% 	end.
+%% 
+%% execute(Downloads) ->
+%% 	case boss_db:find_first(config) of
+%% 		undefined ->
+%% 			ok;
+%% 		Config ->
+%% 			NumDownloads = Config:num_simultaneous_downloads(),
+%% 			case next_accquired_download(Downloads, NumDownloads) of
+%% 				ok ->
+%% 					ok;
+%% 				undefined ->
+%% 					ok;
+%% 				Download ->
+%% 					%% spawn execution process
+%% 					ok
+%% 			end
+%% 	end.
 
 %%----------------------------------------------------------------------
 %% Function: loop/1
@@ -134,7 +134,7 @@ loop(Account, Downloads, Subscriber) ->
 			erlang:display({manager_downloads_account, Account}),
 			case download_lib:save_downloads(Account:first_premium(), DownloadLinkArray) of
 				{ok, SavedDownloads} ->
-					erlang:display({manager_downloads_saved, SavedDownloads}),
+					erlang:spawn(acquirer, start, [Account, SavedDownloads]),
 					notify_subscriber(Subscriber, {manager_on_downloads_saved, SavedDownloads});
 				{error, Error} ->
 					erlang:display({manager_downloads_error, Error}),
@@ -176,7 +176,7 @@ loop(Account, Downloads, Subscriber) ->
 		% download has been accquired
 		%%
 		{download_accquired, Download} ->
-			UpdatedDownload = Download:set(status, ?DL_PENDING),
+			UpdatedDownload = Download:set(status, ?DL_ACQUIRED),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
 					notify_subscriber(Subscriber, {manager_on_download_accquired, [{download, Download}]});
