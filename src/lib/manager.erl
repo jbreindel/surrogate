@@ -39,8 +39,8 @@ start(Account) ->
 		            {noreply, undefined};
 		        {'EXIT', ManagerPid, shutdown} -> % manual shutdown, not a crash
 		            {noreply, undefined};
-		        {'EXIT', ManagerPid, _} ->
-		            start(Account)
+		        {'EXIT', ManagerPid, Reason} ->
+		            erlang:display({manager_reason, Reason})
     		end;
 		Pid ->
 			erlang:display({manager_pid, Pid}),
@@ -93,6 +93,29 @@ add_downloads(Dict, []) ->
 add_downloads(Dict, [Download|Downloads]) ->
 	dict:store(Download:id(), [{download, Download}], Dict).
 
+login_premiums(Account, RefreshedAccount) ->
+	case RefreshedAccount:first_premium() of
+		undefined ->
+			ok;
+		RefreshedPremium ->
+			case Account:first_premium() of
+				undefined ->
+					premium_lib:premium_login(RefreshedPremium);
+				Premium ->
+					RefreshedPremId = RefreshedPremium:id(),
+					PremiumId = Premium:id(),
+					erlang:display([{refresh_prem_id, RefreshedPremId}, {prem_id, PremiumId}]),
+					case RefreshedPremId /= PremiumId of
+						false ->
+							premium_lib:premium_login(Premium);
+						true ->
+							ok
+					end;
+				true ->
+					ok
+			end
+	end.
+
 %%----------------------------------------------------------------------
 %% Function: loop/1
 %% Purpose: Loops the manager with an Account and default options
@@ -102,6 +125,12 @@ add_downloads(Dict, [Download|Downloads]) ->
 %%----------------------------------------------------------------------
 loop(Account) ->
 	register(pid_name(Account), self()),
+	case Account:first_premium() of
+		undefined ->
+			ok;
+		Premium ->
+			premium_lib:premium_login(Premium)
+	end,
 	loop(Account, dict:new(), undefined).
 
 %%----------------------------------------------------------------------
@@ -124,13 +153,13 @@ loop(Account, Downloads, Subscriber) ->
 		{subscriber_connect, SubscriberPid} ->
 			erlang:display({subscriber_connect, SubscriberPid}),
 			case boss_db:find(Account:id()) of
-				undefined -> 
-					notify_subscriber(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
-					loop(Account, Downloads, SubscriberPid);
+				undefined ->
+					error;
 				RefreshedAccount ->
-					notify_subscriber(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
-					loop(RefreshedAccount, Downloads, SubscriberPid)
-			end;
+					login_premiums(Account, RefreshedAccount)
+			end,
+			notify_subscriber(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
+			loop(Account, Downloads, SubscriberPid);
 
 		%%
 		% subscriber sent links to the manager

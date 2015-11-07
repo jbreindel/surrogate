@@ -29,8 +29,8 @@ rapidgator_login(Premium) ->
 							  "application/x-www-form-urlencoded", Form}, [], []) of
 		{ok, {{Version, 302, ReasonPhrase}, Headers, Body}} ->
 			true;
-		true ->
-			false
+		Response ->
+			erlang:display(Response)
 	end.
 	
 
