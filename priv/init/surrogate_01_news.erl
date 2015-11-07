@@ -5,7 +5,8 @@
 % return a list of WatchIDs that should be cancelled in the stop
 % function below (stop is executed if the script is ever reloaded).
 init() ->
-    inets:start(),
+    inets:start(httpc, [{profile, surrogate}]),
+	httpc:set_options([{cookies, enabled}], surrogate),
 	ssl:start(),
     {ok, []}.
 
