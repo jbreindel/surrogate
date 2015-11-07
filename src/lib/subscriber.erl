@@ -57,8 +57,8 @@ start(Account, WebSocket) ->
 		            {noreply, undefined};
 		        {'EXIT', SubscriberPid, shutdown} -> % manual shutdown, not a crash
 		            {noreply, undefined};
-		        {'EXIT', SubscriberPid, _} ->
-		            start(Account, WebSocket)
+		        {'EXIT', SubscriberPid, Reason} ->
+		            erlang:display({reason, Reason})
     		end;
 		Pid ->
 			erlang:display({subscriber_pid, Pid}),
@@ -95,6 +95,7 @@ loop(Account, WebSocket, Manager) ->
 			end;
 		
 		{websocket_close, _} ->
+			erlang:display({websocket_close, undefined}),
 			notify_manager(Manager, {subscriber_disconnect, undefined}),
 			exit(normal);
 		
@@ -104,13 +105,13 @@ loop(Account, WebSocket, Manager) ->
 
 		{manager_downloads, Downloads} ->
 			erlang:display({manager_downloads, Downloads}),
-			WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
-			notify_websocket(WebSocket, {text, binary_to_list(WebSocketJson)});
+			%WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
+			notify_websocket(WebSocket, {text, "{}"});
 
 		{manager_downloads_saved, Downloads} ->
-			WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
-			erlang:display({manager_downloads_saved, binary_to_list(WebSocketJson)}),
-			notify_websocket(WebSocket, {text, binary_to_list(WebSocketJson)});
+			erlang:display({manager_downloads_saved, Downloads}),
+			%WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
+			notify_websocket(WebSocket, {text, "{}"});
 		
 		{manager_downloads_error, Error} ->
 			erlang:display({manager_downloads_error, Error});

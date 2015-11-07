@@ -88,6 +88,11 @@ notify_subscriber(Subscriber, Data) ->
 %% 			end
 %% 	end.
 
+add_downloads(Dict, []) ->
+	Dict;
+add_downloads(Dict, [Download|Downloads]) ->
+	dict:store(Download:id(), [{download, Download}], Dict).
+
 %%----------------------------------------------------------------------
 %% Function: loop/1
 %% Purpose: Loops the manager with an Account and default options
@@ -120,10 +125,10 @@ loop(Account, Downloads, Subscriber) ->
 			erlang:display({subscriber_connect, SubscriberPid}),
 			case boss_db:find(Account:id()) of
 				undefined -> 
-					notify_subscriber(SubscriberPid, {manager_downloads, Downloads:to_list()}),
+					notify_subscriber(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
 					loop(Account, Downloads, SubscriberPid);
 				RefreshedAccount ->
-					notify_subscriber(SubscriberPid, {manager_downloads, Downloads:to_list()}),
+					notify_subscriber(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
 					loop(RefreshedAccount, Downloads, SubscriberPid)
 			end;
 
@@ -134,25 +139,27 @@ loop(Account, Downloads, Subscriber) ->
 			erlang:display({manager_downloads_account, Account}),
 			case download_lib:save_downloads(Account:first_premium(), DownloadLinkArray) of
 				{ok, SavedDownloads} ->
-					erlang:spawn(acquirer, start, [Account, SavedDownloads]),
-					notify_subscriber(Subscriber, {manager_on_downloads_saved, SavedDownloads});
+					erlang:spawn(acquirer, acquire_downloads, [Account, SavedDownloads]),
+					notify_subscriber(Subscriber, {manager_downloads_saved, SavedDownloads}),
+					loop(Account, add_downloads(Downloads, SavedDownloads), Subscriber);
 				{error, Error} ->
 					erlang:display({manager_downloads_error, Error}),
-					notify_subscriber(Subscriber, {manager_on_downloads_error, Error})
-			end,
-			loop(Account, DownloadLinkArray, Subscriber);
+					notify_subscriber(Subscriber, {manager_downloads_error, Error}),
+					loop(Account, Downloads, Subscriber)
+			end;
 		
 		%%
 		% called when the subscriber wants to refresh their downloads
 		%%
 		{subscriber_refresh, _} ->
-			notify_subscriber(Subscriber, {manager_downloads, Downloads}),
+			notify_subscriber(Subscriber, {manager_downloads, dict:to_list(Downloads)}),
 			loop(Account, Downloads, Subscriber);
 
 		%%
 		% subscriber no longer is connected
 		%%
 		{subscriber_disconnect, _} ->
+			erlang:display({subscriber_disconnect, undefined}),
 			loop(Account, Downloads, undefined);
 			
 		%%%%%%%%%%%%%%%%%%%%%%%
