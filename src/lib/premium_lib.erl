@@ -22,11 +22,32 @@ cookie_tokens_header(Cookie, []) ->
 cookie_tokens_header(Cookie, [CookieHeader|CookieHeaders]) ->
 	case string:str(CookieHeader, "expires") of
 		0 when Cookie =:= "" ->
-			cookie_tokens_header(CookieHeader, CookieHeaders);
+			case string:str(CookieHeader, "domain") of
+				0 when Cookie =:= "" ->
+					cookie_tokens_header(CookieHeader, CookieHeaders);
+				0 ->
+					cookie_tokens_header(Cookie ++ "; " ++ CookieHeader, CookieHeaders);
+				Index ->
+					cookie_tokens_header(Cookie, CookieHeaders)
+			end;
 		0 ->
-			cookie_tokens_header(Cookie ++ "; " ++ CookieHeader, CookieHeaders);
+			case string:str(CookieHeader, "domain") of
+				0 when Cookie =:= "" ->
+					cookie_tokens_header(CookieHeader, CookieHeaders);
+				0 ->
+					cookie_tokens_header(Cookie ++ "; " ++ CookieHeader, CookieHeaders);
+				Index ->
+					cookie_tokens_header(Cookie, CookieHeaders)
+			end;
 		Index ->
-			cookie_tokens_header(Cookie, CookieHeaders)
+			case string:str(CookieHeader, "domain") of
+				0 when Cookie =:= "" ->
+					cookie_tokens_header(CookieHeader, CookieHeaders);
+				0 ->
+					cookie_tokens_header(Cookie ++ "; " ++ CookieHeader, CookieHeaders);
+				Index ->
+					cookie_tokens_header(Cookie, CookieHeaders)
+			end
 	end.
 
 cookie_headers(CookieHeaders) ->
