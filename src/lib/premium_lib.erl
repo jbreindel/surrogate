@@ -76,13 +76,10 @@ rapidgator_login(Account, Premium) ->
 		{ok, {{Version, 302, ReasonPhrase}, RespHeaders, Body}} ->
 			Cookies = proplists:get_all_values("set-cookie", RespHeaders),
 			CookieHeaders = cookie_headers(Cookies),
-			erlang:display({cookie_headers, CookieHeaders}),
-			httpc:store_cookies(CookieHeaders, "http://rapidgator.net", HttpClient),
-			erlang:display({client_info, httpc:info(HttpClient)});
+			httpc:store_cookies(CookieHeaders, "http://rapidgator.net", HttpClient);
 		Response ->
 			erlang:display(Response)
 	end.
-	
 
 premium_login(Account, Premium) ->
 	case Premium:type() of
