@@ -26,10 +26,11 @@ notify_manager(Account, Data) ->
 
 acquire(Account, Download) ->
 	erlang:display({acquire, Download}),
+	HttpClient = http_client:instance(Account),
 	Headers = [{"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"}, 
 			   {"User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36"},
 			   {"Accept-Language", "en-US,en;q=0.8"}],
-	case httpc:request(get, {Download:display_url(), Headers}, [], [], surrogate) of
+	case httpc:request(get, {Download:display_url(), Headers}, [], [], HttpClient) of
 		{ok, {{Version, 200, ReasonPhrase}, RespHeaders, Body}} ->
 			erlang:display({body, io:format("~s~n", [Body])});
 		Request ->

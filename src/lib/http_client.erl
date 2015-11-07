@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% FILE: http_profile.erl
+% FILE: http_client.erl
 %
 % AUTHOR: Jake Breindel
 % DATE: 11-7-15
@@ -11,8 +11,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(http_profile).
--export([pid_name/1, alive/1, start/1]).
+-module(http_client).
+-export([pid_name/1, alive/1, instance/1]).
 
 pid_name(Account) ->
 	list_to_atom(Account:id() ++ "-http-profile").
@@ -26,7 +26,7 @@ alive(Account) ->
 			Pid
 	end.
 
-start(Account) ->
+instance(Account) ->
 	HttpProfileName = pid_name(Account),
 	case alive(Account) of
 		false ->

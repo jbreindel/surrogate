@@ -105,11 +105,11 @@ login_premiums(Account, RefreshedAccount) ->
 					RefreshedPremId = RefreshedPremium:id(),
 					PremiumId = Premium:id(),
 					erlang:display([{refresh_prem_id, RefreshedPremId}, {prem_id, PremiumId}]),
-					case RefreshedPremId /= PremiumId of
-						false ->
-							premium_lib:premium_login(Premium);
+					case RefreshedPremId =:= PremiumId of
 						true ->
-							ok
+							ok;
+						false ->
+							premium_lib:premium_login(RefreshedAccount, RefreshedPremium)
 					end;
 				true ->
 					ok

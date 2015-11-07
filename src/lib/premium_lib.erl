@@ -25,9 +25,9 @@ rapidgator_login_form(Email, Password) ->
 rapidgator_login(Account, Premium) ->
 	erlang:display(Premium),
 	Form = rapidgator_login_form(Premium:user_name(), Premium:password()),
-	HttpProfilePid = http_profile:start(Account),
+	HttpClient = http_client:instance(Account),
 	case httpc:request(post, {"https://rapidgator.net/auth/login", [], 
-							  "application/x-www-form-urlencoded", Form}, [], [], HttpProfilePid) of
+							  "application/x-www-form-urlencoded", Form}, [], [], HttpClient) of
 		{ok, {{Version, 302, ReasonPhrase}, RespHeaders, Body}} ->
 			true;
 		Response ->
