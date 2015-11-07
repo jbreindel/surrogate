@@ -15,7 +15,7 @@
 -export([pid_name/1, alive/1, start/1]).
 
 pid_name(Account) ->
-	Account:id() ++ "-http-profile";
+	list_to_atom(Account:id() ++ "-http-profile").
 
 alive(Account) ->
 	HttpProfileName = pid_name(Account),
@@ -28,11 +28,14 @@ alive(Account) ->
 
 start(Account) ->
 	HttpProfileName = pid_name(Account),
-	case alive(HttpProfileName) of
+	case alive(Account) of
 		false ->
-			HttpPid = inets:start([{profile, HttpProfileName}]),
-			httpc:set_options([{cookies, enabled}], HttpPid),
-			register(HttpProfileName, HttpPid);
+			case inets:start(httpc, [{cookies, enabled}, {profile, HttpProfileName}], stand_alone) of
+				{ok, HttpPid} ->
+					erlang:display({http_profile_info, httpc:info(HttpPid)});
+				{error, already_started} ->
+					erlang:display({http_profile_started, started})
+			end;
 		Pid ->
 			Pid
 	end.

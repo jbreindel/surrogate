@@ -100,7 +100,7 @@ login_premiums(Account, RefreshedAccount) ->
 		RefreshedPremium ->
 			case Account:first_premium() of
 				undefined ->
-					premium_lib:premium_login(RefreshedPremium);
+					premium_lib:premium_login(RefreshedAccount, RefreshedPremium);
 				Premium ->
 					RefreshedPremId = RefreshedPremium:id(),
 					PremiumId = Premium:id(),
@@ -125,12 +125,11 @@ login_premiums(Account, RefreshedAccount) ->
 %%----------------------------------------------------------------------
 loop(Account) ->
 	register(pid_name(Account), self()),
-	
 	case Account:first_premium() of
 		undefined ->
 			ok;
 		Premium ->
-			premium_lib:premium_login(Premium)
+			premium_lib:premium_login(Account, Premium)
 	end,
 	loop(Account, dict:new(), undefined).
 
