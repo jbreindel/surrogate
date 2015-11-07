@@ -30,11 +30,15 @@ start(Account) ->
 	HttpProfileName = pid_name(Account),
 	case alive(Account) of
 		false ->
-			case inets:start(httpc, [{cookies, enabled}, {profile, HttpProfileName}], stand_alone) of
+			case inets:start(httpc, [{profile, HttpProfileName}], stand_alone) of
 				{ok, HttpPid} ->
-					erlang:display({http_profile_info, httpc:info(HttpPid)});
+					httpc:set_options([{cookies, enabled}], HttpPid),
+					erlang:display({http_profile_info, httpc:info(HttpPid)}),
+					register(HttpProfileName, HttpPid),
+					HttpPid;
 				{error, already_started} ->
-					erlang:display({http_profile_started, started})
+					erlang:display({http_profile_started, started}),
+					undefined
 			end;
 		Pid ->
 			Pid
