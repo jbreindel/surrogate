@@ -25,9 +25,10 @@ rapidgator_login_form(Email, Password) ->
 rapidgator_login(Premium) ->
 	erlang:display(Premium),
 	Form = rapidgator_login_form(Premium:user_name(), Premium:password()),
+	erlang:display(httpc:info(surrogate)),
 	case httpc:request(post, {"https://rapidgator.net/auth/login", [], 
-							  "application/x-www-form-urlencoded", Form}, [], [], surrogate) of
-		{ok, {{Version, 302, ReasonPhrase}, Headers, Body}} ->
+							  "application/x-www-form-urlencoded", Form}, [], [], {profile, surrogate}) of
+		{ok, {{Version, 302, ReasonPhrase}, RespHeaders, Body}} ->
 			true;
 		Response ->
 			erlang:display(Response)

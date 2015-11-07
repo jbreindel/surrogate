@@ -125,6 +125,7 @@ login_premiums(Account, RefreshedAccount) ->
 %%----------------------------------------------------------------------
 loop(Account) ->
 	register(pid_name(Account), self()),
+	
 	case Account:first_premium() of
 		undefined ->
 			ok;
