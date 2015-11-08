@@ -33,4 +33,5 @@ save_downloads(Premium, [Link|Links], SavedDls) ->
     		save_downloads(Premium, Links, SavedDlList);				
 		{error, Errors} ->
 			{error, Errors}
-	end.		
+	end.
+	

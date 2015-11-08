@@ -78,9 +78,10 @@ schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumActive < Num
 		undefined ->
 			[];
 		Download ->
-			ActiveDownload = Download:set(status, ?DL_NOT_FOUND),
+			ActiveDownload = Download:set(status, ?DL_ACTIVE),
 			case ActiveDownload:save() of
 				{ok, SavedDownload} ->
+					%% TODO schedule download
 					schedule_downloads(NumSimul, NumActive + 1, DownloadsScheduled ++ [SavedDownload]);
 				{error, Errors} ->
 					erlang:display({error, Errors})
