@@ -71,9 +71,9 @@ next_acquired_download() ->
 			Download
 	end.
 
-schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumActive >= NumSimul ->
+schedule_downloads(Account, NumSimul, NumActive, DownloadsScheduled) when NumActive >= NumSimul ->
 	DownloadsScheduled;
-schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumActive < NumSimul ->
+schedule_downloads(Account, NumSimul, NumActive, DownloadsScheduled) when NumActive < NumSimul ->
 	case next_acquired_download() of
 		undefined ->
 			[];
@@ -81,14 +81,14 @@ schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumActive < Num
 			ActiveDownload = Download:set(status, ?DL_ACTIVE),
 			case ActiveDownload:save() of
 				{ok, SavedDownload} ->
-					%% TODO schedule download
-					schedule_downloads(NumSimul, NumActive + 1, DownloadsScheduled ++ [SavedDownload]);
+					spawn(downloader, execute, [Account, ActiveDownload]),
+					schedule_downloads(Account, NumSimul, NumActive + 1, DownloadsScheduled ++ [SavedDownload]);
 				{error, Errors} ->
 					erlang:display({error, Errors})
 			end
 	end.
 
-schedule() ->
+schedule(Account) ->
 	case boss_db:find_first(config) of
 		undefined ->
 			ok;
@@ -96,7 +96,7 @@ schedule() ->
 			NumSimul = Config:num_simultaneous_downloads(),
 			case num_active_downloads() of
 				NumActive when NumActive < NumSimul ->
-					schedule_downloads(NumSimul, NumActive, []);
+					schedule_downloads(Account, NumSimul, NumActive, []);
 				NumActive ->
 					erlang:display({download_max, NumActive})
 			end
@@ -234,7 +234,7 @@ loop(Account, Downloads, Subscriber) ->
 				{error, Errors} ->
 					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 			end,
-			case schedule() of
+			case schedule(Account) of
 				[] ->
 					loop(Account, Downloads, Subscriber);
 				ScheduledDownloads ->
