@@ -71,9 +71,9 @@ next_acquired_download() ->
 			Download
 	end.
 
-schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumSimul =:= NumActive ->
+schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumActive >= NumSimul ->
 	DownloadsScheduled;
-schedule_downloads(NumSimul, NumActive, DownloadsScheduled) ->
+schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumActive < NumSimul ->
 	case next_acquired_download() of
 		undefined ->
 			[];
@@ -224,10 +224,11 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% download has been accquired
 		%%
-		{download_accquired, [{download, Download}, {real_url, RealUrl}]} ->
+		{download_acquired, [{download, Download}, {real_url, RealUrl}]} ->
 			AcquiredDownload = Download:set([{status, ?DL_ACQUIRED}, {real_url, RealUrl}]),
 			case AcquiredDownload:save() of
 				{ok, SavedAcquiredDownload} ->
+					erlang:display({manager_download_acquired, [{download, SavedAcquiredDownload}]}),
 					notify_subscriber(Subscriber, {manager_download_acquired, [{download, SavedAcquiredDownload}]});
 				{error, Errors} ->
 					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
