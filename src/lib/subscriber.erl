@@ -112,10 +112,16 @@ loop(Account, WebSocket, Manager) ->
 			erlang:display({manager_downloads_saved, Downloads}),
 			%WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
 			notify_websocket(WebSocket, {text, "{}"});
+
+		{manager_download_acquired, Download} ->
+			erlang:display({manager_download_acquired, Download});
+		
+		{manager_download_not_found, Download} ->
+			erlang:display({manager_download_not_found, Download});
 		
 		{manager_downloads_error, Error} ->
 			erlang:display({manager_downloads_error, Error});
-
+		
 		Message ->
 			erlang:display(Message)
 	end,

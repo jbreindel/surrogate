@@ -13,7 +13,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(manager).
--export([pid_name/1, start/1, loop/1]).
+-export([pid_name/1, alive/1, start/1, loop/1]).
 -include("download_status.hrl").
 
 pid_name(Account) ->
@@ -47,12 +47,6 @@ start(Account) ->
 			{noreply, undefined}
 	end.
 
-%%----------------------------------------------------------------------
-%% Function: notify_subscriber/2
-%% Purpose: Sends the subscriber the data if it exists
-%% Args:   	Subscriber - Process monitoring events
-%%			Data - data to send to the subscriber
-%%----------------------------------------------------------------------
 notify_subscriber(Subscriber, Data) ->
 	case is_pid(Subscriber) of
 		true ->
@@ -61,32 +55,51 @@ notify_subscriber(Subscriber, Data) ->
 			false
 	end.
 
-%% next_accquired_download(Downloads, NumDownloads) when Downloads:size() >= NumDownloads ->
-%% 	ok.
-%% next_accquired_download(Downloads, NumDownloads) when Downloads:size() < NumDownloads ->
-%% 	case boss_db:find(download, [{status, equals, ?DL_ACQUIRED}], [{order_by, created_time}]) of
-%% 		[] ->
-%% 			undefined;
-%% 		[Download|Downloads] ->
-%% 			Download
-%% 	end.
-%% 
-%% execute(Downloads) ->
-%% 	case boss_db:find_first(config) of
-%% 		undefined ->
-%% 			ok;
-%% 		Config ->
-%% 			NumDownloads = Config:num_simultaneous_downloads(),
-%% 			case next_accquired_download(Downloads, NumDownloads) of
-%% 				ok ->
-%% 					ok;
-%% 				undefined ->
-%% 					ok;
-%% 				Download ->
-%% 					%% spawn execution process
-%% 					ok
-%% 			end
-%% 	end.
+num_active_downloads() ->
+	case boss_db:find(download, [{status, equals, ?DL_ACTIVE}], [{order_by, created_time}]) of
+		[] ->
+			0;
+		ActiveDownloads ->
+			length(ActiveDownloads)
+	end.
+
+next_acquired_download() ->
+	case boss_db:find(download, [{status, equals, ?DL_ACQUIRED}], [{order_by, created_time}]) of
+		[] ->
+			undefined;
+		[Download|Downloads] ->
+			Download
+	end.
+
+schedule_downloads(NumSimul, NumActive, DownloadsScheduled) when NumSimul =:= NumActive ->
+	DownloadsScheduled;
+schedule_downloads(NumSimul, NumActive, DownloadsScheduled) ->
+	case next_acquired_download() of
+		undefined ->
+			[];
+		Download ->
+			ActiveDownload = Download:set(status, ?DL_NOT_FOUND),
+			case ActiveDownload:save() of
+				{ok, SavedDownload} ->
+					schedule_downloads(NumSimul, NumActive + 1, DownloadsScheduled ++ [SavedDownload]);
+				{error, Errors} ->
+					erlang:display({error, Errors})
+			end
+	end.
+
+schedule() ->
+	case boss_db:find_first(config) of
+		undefined ->
+			ok;
+		Config ->
+			NumSimul = Config:num_simultaneous_downloads(),
+			case num_active_downloads() of
+				NumActive when NumActive < NumSimul ->
+					schedule_downloads(NumSimul, NumActive, []);
+				NumActive ->
+					erlang:display({download_max, NumActive})
+			end
+	end.
 
 add_downloads(Dict, []) ->
 	Dict;
@@ -170,7 +183,7 @@ loop(Account, Downloads, Subscriber) ->
 				{ok, SavedDownloads} ->
 					erlang:spawn(acquirer, acquire_downloads, [Account, SavedDownloads]),
 					notify_subscriber(Subscriber, {manager_downloads_saved, SavedDownloads}),
-					loop(Account, add_downloads(Downloads, SavedDownloads), Subscriber);
+					loop(Account, Downloads, Subscriber);
 				{error, Error} ->
 					erlang:display({manager_downloads_error, Error}),
 					notify_subscriber(Subscriber, {manager_downloads_error, Error}),
@@ -198,33 +211,38 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% download is not found
 		%%
-		{download_not_found, Download} ->
+		{download_not_found, [{download, Download}]} ->
 			UpdatedDownload = Download:set(status, ?DL_NOT_FOUND),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_on_download_not_found, [{download, Download}]});
+					notify_subscriber(Subscriber, {manager_download_not_found, [{download, Download}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 		
 		%%
 		% download has been accquired
 		%%
-		{download_accquired, Download} ->
-			UpdatedDownload = Download:set(status, ?DL_ACQUIRED),
-			case UpdatedDownload:save() of
-				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_on_download_accquired, [{download, Download}]});
+		{download_accquired, [{download, Download}, {real_url, RealUrl}]} ->
+			AcquiredDownload = Download:set([{status, ?DL_ACQUIRED}, {real_url, RealUrl}]),
+			case AcquiredDownload:save() of
+				{ok, SavedAcquiredDownload} ->
+					notify_subscriber(Subscriber, {manager_download_acquired, [{download, SavedAcquiredDownload}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 			end,
-			loop(Account, Downloads, Subscriber);
+			case schedule() of
+				[] ->
+					loop(Account, Downloads, Subscriber);
+				ScheduledDownloads ->
+					loop(Account, add_downloads(Downloads, ScheduledDownloads), Subscriber)
+			end;
 			
 		%%
 		% download has started
 		%%
-		{download_started, Download} ->
+		{download_started, [{download, Download}]} ->
 			UpdatedDownload = Download:set(status, ?DL_ACTIVE),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
@@ -246,6 +264,12 @@ loop(Account, Downloads, Subscriber) ->
 					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
+		
+		%%
+		% download has errored
+		%%
+		{download_error, [{download, Download}, {error, Error}]} ->
+			erlang:display({download_error, [{download, Download}, {error, Error}]});
 	
 	Message ->
 			erlang:display({message, Message})
