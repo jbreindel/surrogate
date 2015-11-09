@@ -105,7 +105,8 @@ schedule(Account) ->
 add_downloads(Dict, []) ->
 	Dict;
 add_downloads(Dict, [Download|Downloads]) ->
-	dict:store(Download:id(), [{download, Download}], Dict).
+	UpdatedDict = dict:store(Download:id(), [{download, Download}], Dict),
+	add_downloads(UpdatedDic, Downloads).
 
 login_premiums(Account, RefreshedAccount) ->
 	case RefreshedAccount:first_premium() of
