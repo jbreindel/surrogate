@@ -40,7 +40,8 @@ download_meta(HttpClient, Download) ->
 			ContentDispositionStr = proplists:get_value("content-disposition", RespHeaders),
 			[_, FileNameStr] = string:tokens(ContentDispositionStr, "=\""),
 			FileName = parse_file_name(FileNameStr),
-			MetaDownload = Download:set([{file, FileName}, {length, ContentLength}]),
+			FileNameWithDir = download_file(FileName),
+			MetaDownload = Download:set([{file, FileNameWithDir}, {length, ContentLength}]),
 			case MetaDownload:save() of
 				{ok, SavedDownload} ->
 					{download, SavedDownload};
@@ -51,12 +52,12 @@ download_meta(HttpClient, Download) ->
 			{error, Response}
 	end.
 
-download_file(Download) ->
-	case config:find_first() of
+download_file(FileName) ->
+	case boss_db:find_first(config) of
 		undefined ->
 			{error, "Cannot find Config"};
 		Config ->
-			Config:download_directory() ++ Download:file()
+			Config:download_directory() ++ FileName
 	end.
 
 list_min([H|T]) -> 
@@ -83,24 +84,31 @@ calc_byte_sum([Elem|Elems], Sum) ->
 
 update_speed(Account, Download, SpeedOrddict, Length) ->
 	TimeMs = date_lib:epoch_hires(),
-	Timestamps = orddict:fetch_keys(SpeedOrddict),
-	EarliestTimeMs = list_min(Timestamps),
-	case TimeMs - EarliestTimeMs of
-		Diff when Diff < 1000 ->
+	case orddict:is_empty(SpeedOrddict) of
+		true ->
 			orddict:store(TimeMs, [{length, Length}], SpeedOrddict);
-		Diff when Diff >= 1000 ->
-			ByteCount = calc_byte_sum(SpeedDict:to_list(), 0),
-			TimeDiff = list_max(Timestamps) - list_min(Timestamps),
-			case subscriber:alive(Account) of
-				false ->
-					orddict:store(TimeMs, [{length, Length}], orddict:new());
-				SubscriberPid ->
-					case manager:alive(Account) of
+		false ->
+			Timestamps = orddict:fetch_keys(SpeedOrddict),
+			EarliestTimeMs = list_min(Timestamps),
+			case TimeMs - EarliestTimeMs of
+				Diff when Diff < 1000 ->
+					orddict:store(TimeMs, [{length, Length}], SpeedOrddict);
+				Diff when Diff >= 1000 ->
+					ByteCount = calc_byte_sum(SpeedOrddict:to_list(), 0),
+					Max = list_max(Timestamps),
+					Min = list_min(Timestamps),
+					TimeDiff = Max - Min,
+					case subscriber:alive(Account) of
 						false ->
 							orddict:store(TimeMs, [{length, Length}], orddict:new());
-						ManagerPid ->
-							ManagerPid ! {download_progress, [{download, Download}, {speed, ByteCount / TimeDiff}, {progress, ByteCount}]},
-							orddict:store(TimeMs, [{length, Length}], orddict:new())
+						SubscriberPid ->
+							case manager:alive(Account) of
+								false ->
+									orddict:store(TimeMs, [{length, Length}], orddict:new());
+								ManagerPid ->
+									ManagerPid ! {download_progress, [{download, Download}, {speed, ByteCount / TimeDiff}, {progress, ByteCount}]},
+									orddict:store(TimeMs, [{length, Length}], orddict:new())
+							end
 					end
 			end
 	end.
@@ -113,11 +121,11 @@ download(Account, Download, SpeedOrddict) ->
 			download(Account, Download, SpeedOrddict);
 		{http, {RequestId, stream, BinBodyPart}} ->
 			UpdatedSpeedOrdict = update_speed(Account, Download, SpeedOrddict, byte_size(BinBodyPart)),
- 			file:write_file(Download:file(), BinBodyPart, append),
+ 			file:write_file(Download:file(), BinBodyPart, [append]),
 			download(Account, Download, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
 			erlang:display({stream_end, Headers}),
-			notify_manager(Account, {download_started, [{download, Download}]}),
+			notify_manager(Account, {download_started, [{download, Download}]})
 	end.
 
 execute(Account, Download) ->
@@ -131,5 +139,5 @@ execute(Account, Download) ->
 					download(Account, UpdatedDownload, orddict:new())
 			end;
 		{error, Errors} ->
-			erlang:display({content_disposition, Errors})
+			erlang:display({content_disposition, Download})
 	end.
