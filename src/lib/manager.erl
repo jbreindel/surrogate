@@ -213,7 +213,8 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% download is not found
 		%%
-		{download_not_found, [{download, Download}]} ->
+		{download_not_found, DownloadProps} ->
+			[{download, Download}] = DownloadProps,
 			UpdatedDownload = Download:set(status, ?DL_NOT_FOUND),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
@@ -226,7 +227,8 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% download has been accquired
 		%%
-		{download_acquired, [{download, Download}, {real_url, RealUrl}]} ->
+		{download_acquired, DownloadProps} ->
+			[{download, Download}, {real_url, RealUrl}] = DownloadProps,
 			AcquiredDownload = Download:set([{status, ?DL_ACQUIRED}, {real_url, RealUrl}]),
 			case AcquiredDownload:save() of
 				{ok, SavedAcquiredDownload} ->
@@ -246,7 +248,8 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% download has started
 		%%
-		{download_started, [{download, Download}]} ->
+		{download_started, DownloadProps} ->
+			[{download, Download}] = DownloadProps,
 			UpdatedDownload = Download:set(status, ?DL_ACTIVE),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
@@ -259,7 +262,8 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		% download has finished
 		%%
-		{download_complete, Download} ->
+		{download_complete, DownloadProps} ->
+			[{download, Download}] = DownloadProps,
 			UpdatedDownload = Download:set(status, ?DL_COMPLETED),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
