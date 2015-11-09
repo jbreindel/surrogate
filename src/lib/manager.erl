@@ -258,6 +258,13 @@ loop(Account, Downloads, Subscriber) ->
 					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
+		
+		%%
+		% download progress update
+		%%
+		{download_progress, DownloadProps} ->
+			erlang:display({download_progress, DownloadProps}),
+			loop(Account, Downloads, Subscriber);
 			
 		%%
 		% download has finished
