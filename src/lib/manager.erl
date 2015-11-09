@@ -91,14 +91,14 @@ schedule_downloads(Account, NumSimul, NumActive, DownloadsScheduled) when NumAct
 schedule(Account) ->
 	case boss_db:find_first(config) of
 		undefined ->
-			ok;
+			{error, "Cannot find Config."};
 		Config ->
 			NumSimul = Config:num_simultaneous_downloads(),
 			case num_active_downloads() of
 				NumActive when NumActive < NumSimul ->
 					schedule_downloads(Account, NumSimul, NumActive, []);
 				NumActive ->
-					erlang:display({download_max, NumActive})
+					[]
 			end
 	end.
 
@@ -106,7 +106,7 @@ add_downloads(Dict, []) ->
 	Dict;
 add_downloads(Dict, [Download|Downloads]) ->
 	UpdatedDict = dict:store(Download:id(), [{download, Download}], Dict),
-	add_downloads(UpdatedDic, Downloads).
+	add_downloads(UpdatedDict, Downloads).
 
 login_premiums(Account, RefreshedAccount) ->
 	case RefreshedAccount:first_premium() of
@@ -239,6 +239,7 @@ loop(Account, Downloads, Subscriber) ->
 				[] ->
 					loop(Account, Downloads, Subscriber);
 				ScheduledDownloads ->
+					erlang:display({scheduled_downloads, ScheduledDownloads}),
 					loop(Account, add_downloads(Downloads, ScheduledDownloads), Subscriber)
 			end;
 			
