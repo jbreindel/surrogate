@@ -83,7 +83,7 @@ calc_byte_sum([Elem|Elems], Sum) ->
 	calc_byte_sum(Elems, Sum + proplists:get_value(length, LengthProps)).
 
 update_speed(Account, Download, SpeedOrddict, Length) ->
-	TimeMs = date_lib:epoch_hires(),
+	TimeMs = date_lib:now_to_milliseconds_hires(now()),
 	case orddict:is_empty(SpeedOrddict) of
 		true ->
 			orddict:store(TimeMs, [{length, Length}], SpeedOrddict);
@@ -94,7 +94,7 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 				Diff when Diff < 1000 ->
 					orddict:store(TimeMs, [{length, Length}], SpeedOrddict);
 				Diff when Diff >= 1000 ->
-					ByteCount = calc_byte_sum(SpeedOrddict:to_list(), 0),
+					ByteCount = calc_byte_sum(orddict:to_list(SpeedOrddict), 0),
 					Max = list_max(Timestamps),
 					Min = list_min(Timestamps),
 					TimeDiff = Max - Min,
@@ -106,7 +106,7 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 								false ->
 									orddict:store(TimeMs, [{length, Length}], orddict:new());
 								ManagerPid ->
-									ManagerPid ! {download_progress, [{download, Download}, {speed, ByteCount / TimeDiff}, {progress, ByteCount}]},
+									ManagerPid ! {download_progress, [{download, Download}, {speed, ByteCount / (TimeDiff / 1000)}, {progress, ByteCount}]},
 									orddict:store(TimeMs, [{length, Length}], orddict:new())
 							end
 					end
@@ -125,7 +125,7 @@ download(Account, Download, SpeedOrddict) ->
 			download(Account, Download, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
 			erlang:display({stream_end, Headers}),
-			notify_manager(Account, {download_started, [{download, Download}]})
+			notify_manager(Account, {download_completed, [{download, Download}]})
 	end.
 
 execute(Account, Download) ->
