@@ -106,7 +106,9 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 								false ->
 									orddict:store(TimeMs, [{length, Length}], orddict:new());
 								ManagerPid ->
-									ManagerPid ! {download_progress, [{download, Download}, {speed, ByteCount / (TimeDiff / 1000)}, {progress, ByteCount}]},
+									ManagerPid ! {download_progress, [{download, Download}, 
+																	  {speed, ByteCount / (TimeDiff / 1000)}, 
+																	  {progress, ByteCount}]},
 									orddict:store(TimeMs, [{length, Length}], orddict:new())
 							end
 					end
@@ -120,9 +122,11 @@ download(Account, Download, SpeedOrddict) ->
 			notify_manager(Account, {download_started, [{download, Download}]}),
 			download(Account, Download, SpeedOrddict);
 		{http, {RequestId, stream, BinBodyPart}} ->
-			UpdatedSpeedOrdict = update_speed(Account, Download, SpeedOrddict, byte_size(BinBodyPart)),
- 			file:write_file(Download:file(), BinBodyPart, [append]),
-			download(Account, Download, UpdatedSpeedOrdict);
+			ByteSize = byte_size(BinBodyPart),
+			UpdatedDownload = Download:set(progress, ByteSize),
+			UpdatedSpeedOrdict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
+ 			file:write_file(UpdatedDownload:file(), BinBodyPart, [append]),
+			download(Account, UpdatedDownload, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
 			erlang:display({stream_end, Headers}),
 			notify_manager(Account, {download_completed, [{download, Download}]})

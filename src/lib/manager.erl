@@ -264,7 +264,15 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		{download_progress, DownloadProps} ->
 			notify_subscriber(Subscriber, {manager_download_progress, DownloadProps}),
-			loop(Account, Downloads, Subscriber);
+			Download = proplists:get_value(download, DownloadProps),
+			case Download:save() of
+				{ok, SavedDownload} ->
+					UpdatedDownloadProps = proplists:delete(download, DownloadProps) ++ [{download, SavedDownload}],
+					loop(Account, dict:store(SavedDownload:id(), UpdatedDownloadProps), Subscriber);
+				{error, Errors} ->
+					loop(Account, dict:store(Download:id(), DownloadProps), Subscriber)
+			end;
+					
 			
 		%%
 		% download has finished
@@ -284,9 +292,11 @@ loop(Account, Downloads, Subscriber) ->
 		% download has errored
 		%%
 		{download_error, [{download, Download}, {error, Error}]} ->
-			erlang:display({download_error, [{download, Download}, {error, Error}]});
+			erlang:display({download_error, [{download, Download}, {error, Error}]}),
+			loop(Account, Downloads, Subscriber);
 	
 	Message ->
-			erlang:display({message, Message})
+			erlang:display({message, Message}),
+			loop(Account, Downloads, Subscriber);
 			
 	end.
