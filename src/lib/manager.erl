@@ -222,7 +222,7 @@ loop(Account, Downloads, Subscriber) ->
 				{error, Errors} ->
 					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 			end,
-			loop(Account, Downloads, Subscriber);
+			loop(Account, dict:store(Download:id(), DownloadProps), Subscriber);
 		
 		%%
 		% download has been accquired
@@ -249,13 +249,13 @@ loop(Account, Downloads, Subscriber) ->
 		% download has started
 		%%
 		{download_started, DownloadProps} ->
-			[{download, Download}] = DownloadProps,
+			Download = proplists:get_value(download, DownloadProps),
 			UpdatedDownload = Download:set(status, ?DL_ACTIVE),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_on_download_started, [{download, Download}]});
+					notify_subscriber(Subscriber, {manager_download_started, [{download, Download}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 			end,
 			loop(Account, Downloads, Subscriber);
 		
@@ -278,25 +278,41 @@ loop(Account, Downloads, Subscriber) ->
 		% download has finished
 		%%
 		{download_complete, DownloadProps} ->
-			[{download, Download}] = DownloadProps,
+			Download = proplists:get_value(download, DownloadProps),
 			UpdatedDownload = Download:set(status, ?DL_COMPLETED),
 			case UpdatedDownload:save() of
 				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_on_download_complete, [{download, Download}]});
+					notify_subscriber(Subscriber, {manager_download_complete, [{download, SavedDownload}]});
 				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_on_download_error, [{download, Download}, {errors, Errors}]})
+					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 			end,
-			loop(Account, Downloads, Subscriber);
+			UpdatedDownloads = dict:erase(UpdatedDownload:id(), Downloads),
+			case schedule(Account) of
+				[] ->
+					loop(Account, UpdatedDownloads, Subscriber);
+				ScheduledDownloads ->
+					erlang:display({scheduled_downloads, ScheduledDownloads}),
+					loop(Account, add_downloads(UpdatedDownloads, ScheduledDownloads), Subscriber)
+			end;
 		
 		%%
 		% download has errored
 		%%
-		{download_error, [{download, Download}, {error, Error}]} ->
+		{download_error, DownloadProps} ->
+			Download = proplists:get_value(download, DownloadProps),
+			Error = proplists:get_value(error, DownloadProps),
 			erlang:display({download_error, [{download, Download}, {error, Error}]}),
-			loop(Account, Downloads, Subscriber);
+			UpdatedDownload = Download:set(status, ?DL_FAILED),
+			case UpdatedDownload:save() of
+				{ok, SavedDownload} ->
+					notify_subscriber(Subscriber, {manager_download_error, [{download, UpdatedDownload}, {error, Error}]});
+				{error, Errors} ->
+					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {error, Error}]})
+			end,
+			loop(Account, dict:erase(Download:id(), Downloads), Subscriber);
 	
 	Message ->
 			erlang:display({message, Message}),
-			loop(Account, Downloads, Subscriber);
+			loop(Account, Downloads, Subscriber)
 			
 	end.
