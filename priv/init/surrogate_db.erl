@@ -14,7 +14,7 @@ init_db(Nodes) ->
   mnesia:create_schema(Nodes),
   mnesia:change_table_copy_type(schema, node(), disc_copies), % only for local node?
   mnesia:start(),
-  ModelList = [list_to_atom (M) || M <- boss_files:model_list (?APPNAME)],
+  ModelList = [list_to_atom (M) || M <- boss_files:model_list(?APPNAME)],
   ExistingTables = mnesia:system_info(tables),
   Tables = (ModelList ++ ['_ids_']) -- ExistingTables,
   create_model_tables(Nodes, Tables).

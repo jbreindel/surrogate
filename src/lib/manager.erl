@@ -222,7 +222,7 @@ loop(Account, Downloads, Subscriber) ->
 				{error, Errors} ->
 					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 			end,
-			loop(Account, dict:store(Download:id(), DownloadProps), Subscriber);
+			loop(Account, dict:store(Download:id(), DownloadProps, Downloads), Subscriber);
 		
 		%%
 		% download has been accquired
@@ -268,9 +268,9 @@ loop(Account, Downloads, Subscriber) ->
 			case Download:save() of
 				{ok, SavedDownload} ->
 					UpdatedDownloadProps = proplists:delete(download, DownloadProps) ++ [{download, SavedDownload}],
-					loop(Account, dict:store(SavedDownload:id(), UpdatedDownloadProps), Subscriber);
+					loop(Account, dict:store(SavedDownload:id(), UpdatedDownloadProps, Downloads), Subscriber);
 				{error, Errors} ->
-					loop(Account, dict:store(Download:id(), DownloadProps), Subscriber)
+					loop(Account, dict:store(Download:id(), DownloadProps, Downloads), Subscriber)
 			end;
 					
 			

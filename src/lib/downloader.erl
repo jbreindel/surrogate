@@ -123,7 +123,7 @@ download(Account, Download, SpeedOrddict) ->
 			download(Account, Download, SpeedOrddict);
 		{http, {RequestId, stream, BinBodyPart}} ->
 			ByteSize = byte_size(BinBodyPart),
-			UpdatedDownload = Download:set(progress, ByteSize),
+			UpdatedDownload = Download:set(progress, Download:progress() + ByteSize),
 			UpdatedSpeedOrdict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
  			file:write_file(UpdatedDownload:file(), BinBodyPart, [append]),
 			download(Account, UpdatedDownload, UpdatedSpeedOrdict);

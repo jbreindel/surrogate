@@ -34,4 +34,36 @@ save_downloads(Premium, [Link|Links], SavedDls) ->
 		{error, Errors} ->
 			{error, Errors}
 	end.
-	
+
+add_progress_property(DownloadProps, JsonProps) ->
+	case proplists:get_value(progress, DownloadProps) of
+		undefined ->
+			JsonProps;
+		Progress ->
+			JsonProps ++ [{progress, Progress}]
+	end.
+
+add_speed_property(DownloadProps, JsonProps) ->
+	case proplists:get_value(speed, DownloadProps) of
+		undefined ->
+			JsonProps;
+		Speed ->
+			JsonProps ++ [{speed, Speed}]
+	end.
+
+add_meta_properties(DownloadProps, JsonProps) ->
+	add_progress_property(add_speed_property(DownloadProps, JsonProps), JsonProps).
+
+download_to_json(DownloadProps) ->
+	erlang:display({download_props, DownloadProps}),
+	case proplists:get_value(download, DownloadProps) of
+		undefined ->
+			{struct, []};
+		Download ->
+			case boss_model_manager:to_json(Download) of
+				{struct, JsonProps} ->
+					{struct, add_meta_properties(DownloadProps, JsonProps)};
+				_ ->
+					{struct, []}
+			end
+	end.

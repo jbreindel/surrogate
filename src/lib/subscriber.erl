@@ -104,20 +104,27 @@ loop(Account, WebSocket, Manager) ->
 		%%%%%%%%%%%%%%%%%%%%%%
 
 		{manager_downloads, Downloads} ->
-			erlang:display({manager_downloads, Downloads}),
+			DownloadPropList = lists:map(fun({DownloadId, DownloadProps}) -> DownloadProps end, Downloads),
+			erlang:display({download_prop_list, DownloadPropList}),
+			JsonList = lists:map(fun download_lib:download_to_json/1, Downloads),
+			erlang:display({manager_downloads, JsonList}),
+			%%DownloadsJson = mochijson2:encode(),
 			%WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
-			notify_websocket(WebSocket, {text, "{}"});
+			notify_websocket(WebSocket, {text, ""});
 
 		{manager_downloads_saved, Downloads} ->
-			erlang:display({manager_downloads_saved, Downloads}),
+			DownloadsJson = mochijson2:encode(lists:map(fun boss_model_manager:to_json/1, Downloads)),
+			erlang:display({manager_downloads_saved, binary_to_list(DownloadsJson)}),
 			%WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
-			notify_websocket(WebSocket, {text, "{}"});
+			notify_websocket(WebSocket, {text, binary_to_list(DownloadsJson)});
 
-		{manager_download_acquired, Download} ->
+		{manager_download_acquired, DownloadProps} ->
+			Download = proplists:get_value(download, DownloadProps),
 			erlang:display({manager_download_acquired, Download});
 		
-		{manager_download_not_found, Download} ->
-			erlang:display({manager_download_not_found, Download});
+		{manager_download_not_found, DownloadProps} ->
+			Download = proplists:get_value(download, DownloadProps),
+			erlang:display({manager_download_not_found, download:module_info()});
 		
 		{manager_download_progress, DownloadProps} ->
 			notify_websocket(WebSocket, {text, "DownloadProgress"});
