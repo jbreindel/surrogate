@@ -119,6 +119,9 @@ loop(Account, WebSocket, Manager) ->
 		{manager_download_not_found, Download} ->
 			erlang:display({manager_download_not_found, Download});
 		
+		{manager_download_progress, DownloadProps} ->
+			notify_websocket(WebSocket, {text, "DownloadProgress"});
+		
 		{manager_download_error, Error} ->
 			erlang:display({manager_downloads_error, Error});
 		

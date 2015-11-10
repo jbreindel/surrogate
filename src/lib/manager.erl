@@ -263,7 +263,7 @@ loop(Account, Downloads, Subscriber) ->
 		% download progress update
 		%%
 		{download_progress, DownloadProps} ->
-			erlang:display({download_progress, DownloadProps}),
+			notify_subscriber(Subscriber, {manager_download_progress, DownloadProps}),
 			loop(Account, Downloads, Subscriber);
 			
 		%%
