@@ -35,12 +35,12 @@ save_downloads(Premium, [Link|Links], SavedDls) ->
 			{error, Errors}
 	end.
 
-add_progress_property(DownloadProps, JsonProps) ->
-	case proplists:get_value(progress, DownloadProps) of
+add_chunk_property(DownloadProps, JsonProps) ->
+	case proplists:get_value(chunk_size, DownloadProps) of
 		undefined ->
 			JsonProps;
-		Progress ->
-			JsonProps ++ [{progress, Progress}]
+		ChunkSize ->
+			JsonProps ++ [{chunk_size, ChunkSize}]
 	end.
 
 add_speed_property(DownloadProps, JsonProps) ->
@@ -52,7 +52,8 @@ add_speed_property(DownloadProps, JsonProps) ->
 	end.
 
 add_meta_properties(DownloadProps, JsonProps) ->
-	add_progress_property(add_speed_property(DownloadProps, JsonProps), JsonProps).
+	ChunkProps = add_chunk_property(DownloadProps, JsonProps),
+	add_speed_property(DownloadProps, ChunkProps).
 
 download_to_json(DownloadProps) ->
 	erlang:display({download_props, DownloadProps}),

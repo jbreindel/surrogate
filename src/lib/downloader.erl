@@ -108,7 +108,7 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 								ManagerPid ->
 									ManagerPid ! {download_progress, [{download, Download}, 
 																	  {speed, ByteCount / (TimeDiff / 1000)}, 
-																	  {progress, ByteCount}]},
+																	  {chunk_size, ByteCount}]},
 									orddict:store(TimeMs, [{length, Length}], orddict:new())
 							end
 					end
