@@ -56,7 +56,6 @@ add_meta_properties(DownloadProps, JsonProps) ->
 	add_speed_property(DownloadProps, ChunkProps).
 
 download_to_json(DownloadProps) ->
-	erlang:display({download_props, DownloadProps}),
 	case proplists:get_value(download, DownloadProps) of
 		undefined ->
 			{struct, []};

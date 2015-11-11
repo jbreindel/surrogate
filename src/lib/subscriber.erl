@@ -65,6 +65,17 @@ start(Account, WebSocket) ->
 			{noreply, undefined}
 	end.
 
+serialize_downloads(Message, Downloads) ->
+	DownloadPropList = lists:map(fun({DownloadId, DownloadProps}) -> DownloadProps end, Downloads),
+	DownloadJsonStruct = {struct, [{message, Message}, {downloads, lists:map(fun download_lib:download_to_json/1, DownloadPropList)}]},
+	JsonDownloads = iolist_to_binary(mochijson2:encode(DownloadJsonStruct)),
+	binary_to_list(JsonDownloads).
+
+serialize_download(Message, Download) ->
+	DownloadJsonStruct = {struct, [{message, Message}, {download, download_lib:download_to_json(Download)}]},
+	JsonDownloads = iolist_to_binary(mochijson2:encode(DownloadJsonStruct)),
+	binary_to_list(JsonDownloads).
+
 loop(Account, WebSocket) ->
 	register(pid_name(Account), self()),
 	ManagerName = manager:pid_name(Account),
@@ -104,33 +115,28 @@ loop(Account, WebSocket, Manager) ->
 		%%%%%%%%%%%%%%%%%%%%%%
 
 		{manager_downloads, Downloads} ->
-			DownloadPropList = lists:map(fun({DownloadId, DownloadProps}) -> DownloadProps end, Downloads),
-			erlang:display({download_prop_list, DownloadPropList}),
-			JsonDownloads = iolist_to_binary(mochijson2:encode(lists:map(fun download_lib:download_to_json/1, DownloadPropList))),
-			erlang:display({manager_downloads_json, binary_to_list(JsonDownloads)}),
-			%%DownloadsJson = mochijson2:encode(),
-			%WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
-			notify_websocket(WebSocket, {text, "[]"});
+			JsonDownloads = serialize_downloads(<<"downloads">>, Downloads),
+			notify_websocket(WebSocket, {text, JsonDownloads});
 
 		{manager_downloads_saved, Downloads} ->
-			%%DownloadsJson = mochijson2:encode(lists:map(fun boss_model_manager:to_json/1, Downloads)),
-			%%erlang:display({manager_downloads_saved, binary_to_list(DownloadsJson)}),
-			%WebSocketJson = iolist_to_binary(mochijson2:encode({struct, [{downloads, {array, Downloads}}]})),
-			notify_websocket(WebSocket, {text, "[]"});
+			JsonDownloads = serialize_downloads(<<"downloads_save">>, Downloads),
+			notify_websocket(WebSocket, {text, JsonDownloads});
 
 		{manager_download_acquired, DownloadProps} ->
-			Download = proplists:get_value(download, DownloadProps),
-			erlang:display({manager_download_acquired, Download});
+			JsonDownload = serialize_download(<<"download_acquired">>, DownloadProps),
+			notify_websocket(WebSocket, {text, JsonDownload});
 		
 		{manager_download_not_found, DownloadProps} ->
-			Download = proplists:get_value(download, DownloadProps),
-			erlang:display({manager_download_not_found, download:module_info()});
+			JsonDownload = serialize_download(<<"download_not_found">>, DownloadProps),
+			notify_websocket(WebSocket, {text, JsonDownload});
 		
 		{manager_download_progress, DownloadProps} ->
-			notify_websocket(WebSocket, {text, "DownloadProgress"});
+			JsonDownload = serialize_download(<<"download_progress">>, DownloadProps),
+			notify_websocket(WebSocket, {text, JsonDownload});
 		
-		{manager_download_error, Error} ->
-			erlang:display({manager_downloads_error, Error});
+		{manager_download_error, DownloadErrorProps} ->
+			JsonDownload = serialize_download(<<"download_error">>, DownloadErrorProps),
+			erlang:display({manager_downloads_error, JsonDownload});
 		
 		Message ->
 			erlang:display(Message)
