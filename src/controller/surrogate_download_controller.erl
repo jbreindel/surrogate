@@ -21,7 +21,7 @@ before_(_) ->
 downloads('GET', [], Account) ->
 	Premium = Account:premium(),
 	Offset = Req:query_param("offset", 0),
-	Limit = Req:query_param("limit", 15),
+	{Limit, _} = string:to_integer(Req:query_param("limit", "15")),
 	case Req:query_param("filter", "pending") of
 		"pending" ->
 			Downloads = boss_db:find(download, 

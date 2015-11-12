@@ -14,6 +14,19 @@
  
  	'use strict';
  	
+ 	// download arrays
+ 	var downloads = {
+ 		pending: [],
+ 		completed: [],
+ 		failed: []
+ 	};
+ 	
+ 	// rebuilds a table accordingly
+ 	function rebuildTable($table, downloadArray) {
+ 		
+ 		
+ 	}
+		
  	// open a websocket
  	var managerSocket = 
  		new WebSocket('ws://' + location.host + '/websocket/manager');
@@ -41,12 +54,56 @@
  		
  		console.log('onmessage');
  	};
-	
-	// called when table data is loaded
-	function onTableDataLoaded($table, data) {
-	
-		// TODO
-	}
+ 	
+ 	// watch pending downloads
+ 	watch(downloads, 'pending', function(prop, action, newvalue, oldvalue) {
+ 		
+ 		console.log('pending changed');
+ 	});
+ 	
+ 	// watch completed downloads
+ 	watch(downloads, 'completed', function(prop, action, newvalue, oldvalue) {
+ 		
+ 		console.log('completed changed');
+ 	});
+ 	
+ 	// watch failed downloads
+ 	watch(downloads, 'failed', function(prop, action, newvalue, oldvalue) {
+ 		
+ 		console.log('failed changed');
+ 	});
+ 	
+ 	// called when data is loaded via rest
+ 	function onDownloadDataLoaded(data, downloadType) {
+ 		
+ 		// SWITCH on the tab name
+ 		switch (downloadType) {
+ 			
+ 		// pending downloads
+ 		case 'pending':
+ 			
+ 			// set the pending downloads
+ 			downloads.pending = data;
+ 			
+ 			// exit
+ 			break;
+ 			
+ 		// completed downloads
+ 		case 'completed':
+ 			
+ 			// set the pending downloads
+ 			downloads.completed = data;
+
+ 			// exit
+ 			break;
+ 			
+ 		// failed downloads
+ 		case 'failed':
+ 			
+ 			// set the pending downloads
+ 			downloads.failed = data;
+ 		}
+ 	}
  	
  	// called with tab vars
  	function onTabClick($table, statusType) {
@@ -62,11 +119,11 @@
         }
 		
 		// get the rows
-		$.get(location.host + '/download/downloads/?status=' 
+		$.get('/download/downloads/?status=' 
 			+ statusType + '&limit=15', function(data) {
 			
-				// call the table data loader
-				onTableDataLoaded($table, data);	
+				// call the download data handler
+				onDownloadDataLoaded(data, statusType);
 			});
  	}
  	
@@ -136,6 +193,13 @@
  		
  		// set the downloads back to nothing
  		$('#download-url-area').val('');
+ 	});
+ 	
+ 	// on initial page load
+ 	$.get('/download/downloads/?status=pending&limit=15', function(data) {
+ 		
+ 		// call the page loaded handler
+ 		onDownloadDataLoaded(data, 'pending');
  	});
  
  });
