@@ -21,10 +21,115 @@
  		failed: []
  	};
  	
+ 	// returns readable download status
+ 	function downloadStatus(download) {
+ 		
+ 		// SWITCH on download status
+ 		switch (download.status) {
+ 		
+ 		case 0:
+ 			return 'pending';
+ 		case 1:
+ 			return 'acquired'; 			
+ 		case 2:
+ 			return 'active'; 			
+ 		case 3:
+ 			return 'paused'; 			
+ 		case 4:
+ 			return 'completed'; 			
+ 		case 5:
+ 			return 'failed'; 			
+ 		case 6:
+ 			return 'not found';
+ 		}
+ 	}
+ 	
+ 	// calculate download progress
+ 	function calcDownloadProgress(download) {
+ 		
+ 		// ref percentage
+ 		return (download.progress / download.length) * 100;
+ 	}
+ 	
+ 	// calculates download speed
+ 	function calcDownloadSpeed(download) {
+ 		
+ 		// ref download speed prop
+ 		return download.speed;
+ 	}
+ 	
+ 	// build download table row
+ 	function buildDownloadTableRow(download) {
+ 		
+ 		// calc download percent
+ 		var percent = calcDownloadProgress(download);
+ 		var speed = calcDownloadSpeed(download);
+ 		var status = downloadStatus(download);
+ 		
+ 		// ref the built row
+ 		return '<tr>' +
+ 					'<td>' + download.id + '</td>' +
+ 					'<td>' + download.file + '</td>' +
+ 					'<td>' + 
+ 						(percent != null ? 
+ 						'<span class="meter green" style="width: ' + percent + '%">' +
+ 							'<p class="percent">' + percent + '%</p>' +
+ 						'</span>' : 
+ 						' - ') +
+ 					'</td>' +
+ 					'<td>' +  + '</td>' +
+ 					'<td>' +
+ 						'<span class="' +
+ 					
+ 						(function() {
+ 							
+ 							// SWITCH on download status
+ 							switch (download.status) {
+ 							
+ 							// pending
+ 							case 'pending':
+ 								return 'info';
+ 								
+ 							case 'acquired':
+ 								return 'secondary'
+ 								
+ 							case 'active':
+ 								return 'success'
+ 								
+ 							case 'completed':
+ 								return 'secondary'
+ 							}
+ 						
+ 						})() +
+ 						
+ 						'">' +
+ 							status +
+ 						'</span>'
+ 					'</td>' +
+ 				'</tr>';
+ 	}
+ 	
  	// rebuilds a table accordingly
  	function rebuildTable($table, downloadArray) {
  		
+ 		// find the table body
+ 		var $tbody = $table.find('tbody');
  		
+ 		// delete all rows
+ 		$tbody.empty();
+ 		
+ 		// FOR all of the downloads in the array
+ 		for (var i = 0; i < downloadArray.length; i++) {
+ 			
+ 			// ref the download
+ 			var download = downloadArray[i];
+ 			
+ 			// build the row
+ 			var row = buildDownloadTableRow(download);
+ 			
+ 			// add a row to the body
+ 			$('#pending-table-body').append(row);
+ 		}
  	}
 		
  	// open a websocket
@@ -64,6 +169,9 @@
  		// IF either of the old or new values are empty
  		if (newvalue.length == 0 || oldvalue.length == 0) {
  			
+ 	 		// rebuild the table
+ 	 		rebuildTable($('pending-table'), downloads.pending);
+ 			
  			// exit
  			return;
  		}
@@ -96,6 +204,9 @@
  			// set the new speed value
  			newDownload.speed = oldDownload.speed;
  		}
+ 		
+ 		// rebuild the table
+ 		rebuildTable($('pending-table'), downloads.pending);
  	});
  	
  	// watch completed downloads
@@ -145,11 +256,11 @@
  	// called with tab vars
  	function onTabClick($table, statusType) {
  		
- 		// select table body
+ 		// $tbody table body
  		var $tBody = $table.children('tbody');
  		
         // IF we have rows
- 		if ($tBody.find('tr').index() > 0) {
+ 		if ($tbody.find('tr').index() > 0) {
         
 			// exit
 			return;
