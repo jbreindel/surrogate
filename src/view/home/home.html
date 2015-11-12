@@ -12,7 +12,7 @@
 
 {% block content %}
 	<div class="home">
-		<ul class="tabs" data-tab>
+		<ul id="download-tabs" class="tabs" data-tab>
 		  <li class="tab-title active"><a href="#pending">Pending</a></li>
 		  <li class="tab-title"><a href="#completed">Completed</a></li>
 		  <li class="tab-title"><a href="#failed">Failed</a></li>
@@ -22,23 +22,17 @@
 		  <div class="content active" id="pending">
 		    <div class="row">
 		    	<div class="small-12 columns">
-				    <table>
+				    <table id="pending-table">
 				   		<thead>
 						    <tr>
-						      <th>#</th>
+						      <th>Id</th>
 						      <th width="200">Url</th>
 						      <th width="200">Progress</th>
+						      <th width="200">Speed</th>
 						      <th width="200">Status</th>
 						    </tr>
 		  				</thead>
-		  				<tbody>
-		  					<tr>
-		  						<td>1</td>
-		  						<td>http://google.com</td>
-		  						<td>50%</td>
-		  						<td>Active</td>
-		  					</tr>
-		  				</tbody>
+		  				<tbody></tbody>
 				    </table>
 		    	</div>
 		    </div>
@@ -46,14 +40,36 @@
 		  <div class="content" id="completed">
 		    <div class="row">
 		    	<div class="small-12 columns">
-		    	
+				    <table id="complete-table">
+				   		<thead>
+						    <tr>
+						      <th>Id</th>
+						      <th width="200">Url</th>
+						      <th width="200">Progress</th>
+						      <th width="200">Speed</th>
+						      <th width="200">Status</th>
+						    </tr>
+		  				</thead>
+		  				<tbody></tbody>
+				    </table>
 		    	</div>
 		    </div>
 		  </div>
 		  <div class="content" id="failed">
 		    <div class="row">
 		    	<div class="small-12 columns">
-		    	
+				    <table id="failed-table">
+				   		<thead>
+						    <tr>
+						      <th>Id</th>
+						      <th width="200">Url</th>
+						      <th width="200">Progress</th>
+						      <th width="200">Speed</th>
+						      <th width="200">Status</th>
+						    </tr>
+		  				</thead>
+		  				<tbody></tbody>
+				    </table>
 		    	</div>
 		    </div>
 		    <table>

@@ -42,6 +42,66 @@
  		console.log('onmessage');
  	};
  	
+ 	// called with tab vars
+ 	function onTabClick($table, statusType) {
+ 		
+ 		// select table body
+ 		var $tBody = $table.children('tbody');
+ 		
+ 		
+ 	}
+ 	
+ 	// tab callbacks
+ 	$('#download-tabs').on('toggled', function (event, tab) {
+ 	    
+ 		// get the tab name
+ 		var tabName = tab.context.text;
+ 		
+ 		// tab vars
+ 		var $table = null;
+ 		var statusType = null;
+ 		
+ 		// SWITCH on the tab name
+ 		switch (tabName) {
+ 			
+ 		// add links
+ 		case 'Add':
+ 			
+ 			// exit
+ 			return;
+ 		
+ 		// pending downloads
+ 		case 'Pending':
+ 			
+ 			// set tab vars
+ 			$table = $('pending-table');
+ 			statusType = 'pending';
+ 			
+ 			// exit
+ 			break;
+ 			
+ 		// completed downloads
+ 		case 'Completed':
+ 			
+ 			// set tab vars
+ 			$table = $('completed-table');
+ 			statusType = 'completed';
+
+ 			// exit
+ 			break;
+ 			
+ 		// failed downloads
+ 		case 'Failed':
+ 			
+ 			// set tab vars
+ 			$table = $('failed-table');
+ 			statusType = 'failed';
+ 		}
+ 		
+ 		// call the tab click handler
+ 		onTabClick($table, statusType);
+ 	});
+ 	
  	// adds new downloads
  	$('#add-downloads').click(function(e) {
  	
