@@ -41,6 +41,12 @@
  		
  		console.log('onmessage');
  	};
+	
+	// called when table data is loaded
+	function onTableDataLoaded($table, data) {
+	
+		// TODO
+	}
  	
  	// called with tab vars
  	function onTabClick($table, statusType) {
@@ -48,7 +54,20 @@
  		// select table body
  		var $tBody = $table.children('tbody');
  		
- 		
+        // IF we have rows
+ 		if ($tBody.find('tr').index() > 0) {
+        
+			// exit
+			return;
+        }
+		
+		// get the rows
+		$.get(location.host + '/download/downloads/?status=' 
+			+ statusType + '&limit=15', function(data) {
+			
+				// call the table data loader
+				onTableDataLoaded($table, data);	
+			});
  	}
  	
  	// tab callbacks
