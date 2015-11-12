@@ -67,7 +67,8 @@ gulp.task('js', ['bower'], function() {
             gulp.src(BOWER_DIR + 'jquery/dist/jquery.js'),
             gulp.src(BOWER_DIR + 'fastclick/lib/fastclick.js'),
             gulp.src(BOWER_DIR + 'foundation/js/foundation.js'),
-            gulp.src(BOWER_DIR + 'watch/src/watch.js')
+            gulp.src(BOWER_DIR + 'watch/src/watch.js'),
+            gulp.src(BOWER_DIR + 'underscore/underscore.js')
         )
         .pipe(concat('app.js'))
         .pipe(gulp.dest(JS_DIR));

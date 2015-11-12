@@ -58,7 +58,44 @@
  	// watch pending downloads
  	watch(downloads, 'pending', function(prop, action, newvalue, oldvalue) {
  		
- 		console.log('pending changed');
+ 		// don't track changes
+ 		WatchJS.noMore = true;
+ 		
+ 		// IF either of the old or new values are empty
+ 		if (newvalue.length == 0 || oldvalue.length == 0) {
+ 			
+ 			// exit
+ 			return;
+ 		}
+ 		
+ 		// FOR all of the new values
+ 		for (var i = 0; i < newvalue.length; i++) {
+ 			
+ 			// ref the new download
+ 			var newDownload = newvalue[i];
+ 			
+ 			// IF the new value has a speed value
+ 			if (newDownload.hasOwnProperty('speed') || 
+ 					newDownload.status != 2) {
+ 				
+ 				// next
+ 				continue;
+ 			}
+ 			
+ 			// find the corresponding old download
+ 			var oldDownload = _.findWhere(oldvalue, {id: newDownload.id});
+ 			
+ 			// IF it doesn't exist
+ 			if (oldDownload == null || 
+ 					typeof (oldDownload) == 'undefined' ) {
+ 				
+ 				// next
+ 				continue;
+ 			}
+ 			
+ 			// set the new speed value
+ 			newDownload.speed = oldDownload.speed;
+ 		}
  	});
  	
  	// watch completed downloads
