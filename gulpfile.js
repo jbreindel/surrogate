@@ -61,16 +61,19 @@ gulp.task('jsLibs', ['bower'], function() {
 
 // js files
 gulp.task('js', ['bower'], function() {
-	
-	// javascript 
-	return streamqueue({ objectMode: true },
+
+	// javascript libs
+	streamqueue({ objectMode: true },
             gulp.src(BOWER_DIR + 'jquery/dist/jquery.js'),
             gulp.src(BOWER_DIR + 'fastclick/lib/fastclick.js'),
-            gulp.src(BOWER_DIR + 'foundation/js/foundation.js'),
-            gulp.src(JS_DIR + 'ui.js')
+            gulp.src(BOWER_DIR + 'foundation/js/foundation.js')
         )
         .pipe(concat('app.js'))
         .pipe(gulp.dest(JS_DIR));
+	
+	// javascript 
+	return gulp.src(JS_DIR + 'ui.js')
+    	.pipe(gulp.dest(JS_DIR));
 });
 
 // font files

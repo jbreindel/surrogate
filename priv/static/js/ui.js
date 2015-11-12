@@ -15,7 +15,8 @@
  	'use strict';
  	
  	// open a websocket
- 	var managerSocket = new WebSocket('ws://' + location.host + '/websocket/manager');
+ 	var managerSocket = 
+ 		new WebSocket('ws://' + location.host + '/websocket/manager');
  	
  	// called when socket opens
  	managerSocket.onopen = function(e) {
