@@ -273,7 +273,6 @@ loop(Account, Downloads, Subscriber) ->
 					loop(Account, dict:store(Download:id(), DownloadProps, Downloads), Subscriber)
 			end;
 					
-			
 		%%
 		% download has finished
 		%%
