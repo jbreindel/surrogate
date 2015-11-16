@@ -1,0 +1,41 @@
+<table id="pending-table">
+	<thead>
+		 <tr>
+		   <th>Id</th>
+		   <th width="500">Url</th>
+		   <th width="200">Progress</th>
+		   {% if statusType == "pending" %}
+		   		<th width="200">Speed</th>
+		   {% endif %}
+		   <th width="200">Status</th>
+		 </tr>
+	</thead>
+	<tbody id="pending-table-body">
+		{% for download in downloads %}
+			<tr>
+				<td>{{ download.id }}</td>
+				<td>{% percentage divisor="{{ download.progress }}" dividend="{{ download.length }}" %}</td>
+				{% if statusType == "pending" %}
+		   			<td></td>
+		   		{% endif %}
+		   		<td>
+		   			{% if download.status == 0 %}
+		   				Pending
+		   			{% elif download.status == 1 %}
+		   				Acquired
+		   			{% elif download.status == 2 %}
+		   				Active
+		   			{% elif download.status == 3 %}
+		   				Paused
+		   			{% elif download.status == 4 %}
+		   				Completed
+		   			{% elif download.status == 5 %}
+		   				Failed
+		   			{% elif download.status == 6 %}
+		   				Not Found
+		   			{% endif %}
+		   		</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>

@@ -20,23 +20,21 @@ before_(_) ->
 
 downloads('GET', [], Account) ->
 	Premium = Account:premium(),
-	Offset = Req:query_param("offset", 0),
-	{Limit, _} = string:to_integer(Req:query_param("limit", "15")),
 	case Req:query_param("filter", "pending") of
 		"pending" ->
 			Downloads = boss_db:find(download, 
 									 [{status, in, [?DL_PENDING, ?DL_ACQUIRED, ?DL_ACTIVE, ?DL_PAUSED]}], 
-									 [{limit, Limit}, {order_by, status}, {descending, true}]),
-			{json, Downloads};
+									 [{order_by, status}, {descending, true}]),
+			{ok, Downloads};
 		"completed" ->
 			Downloads = boss_db:find(download, 
 									 [{status, equals, ?DL_COMPLETED}], 
-									 [{limit, Limit}, {order_by, status}, {descending, true}]),
-			{json, Downloads};
+									 [{order_by, status}, {descending, true}]),
+			{ok, Downloads};
 		"failed" ->
 			Downloads = boss_db:find(download, 
 									 [{status, in, [?DL_FAILED, ?DL_NOT_FOUND]}], 
-									 [{limit, Limit}, {order_by, status}, {descending, true}]),
-			{json, Downloads}
+									 [{order_by, status}, {descending, true}]),
+			{ok, Downloads}
 	end.
 
