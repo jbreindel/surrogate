@@ -15,7 +15,7 @@
  	'use strict';
  	
  	// download arrays
- 	var activeDownloads = [];
+ 	var activeDownloads = null;
  	
  	// websocket handle
  	var managerWebSocket = null;
@@ -38,18 +38,22 @@
  		// TODO
  	}
  	
+    // handles download messages
  	function onDownloadsMessage(downloads) {
  		
  	}
  	
+    // handles download complete messages
  	function onDownloadCompleteMessage(download) {
  		
  	}
  	
+    // handles failed download messages
  	function onDownloadFailedMessage(download) {
  		
  	}
  	
+    // called when we get a download progress message
  	function onDownloadProgressMessage(download) {
  		
  	}
@@ -73,10 +77,8 @@
  		// downnloads message
  		case 'downloads':
  			
- 			// ref the active downloads
- 			var downloads = data.downloads;
- 			
- 			
+            // call download handler
+            onDownloadsMessage(data.downloads);
  		}
  	}
  	
