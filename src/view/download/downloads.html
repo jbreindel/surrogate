@@ -1,4 +1,4 @@
-<table id="pending-table">
+<table id="{{ status_type }}-table">
 	<thead>
 		 <tr>
 		   <th>Id</th>
@@ -10,10 +10,11 @@
 		   <th width="200">Status</th>
 		 </tr>
 	</thead>
-	<tbody id="pending-table-body">
+	<tbody id="{{ status_type }}-table-body">
 		{% for download in downloads %}
 			<tr>
 				<td>{{ download.id }}</td>
+				<td>{{ download.file }}</td>
 				<td>{% percentage download=download %}%</td>
 				{% if status_type == "pending" %}
 		   			<td></td>

@@ -15,144 +15,100 @@
  	'use strict';
  	
  	// download arrays
- 	var downloads = {
- 		pending: [],
- 		completed: [],
- 		failed: []
- 	};
-		
- 	// open a websocket
- 	var managerSocket = 
- 		new WebSocket('ws://' + location.host + '/websocket/manager');
+ 	var activeDownloads = [];
  	
- 	// called when socket opens
- 	managerSocket.onopen = function(e) {
- 		
- 		console.log('onOpen');
- 	};
+ 	// websocket handle
+ 	var managerWebSocket = null;
  	
- 	// called when an error occurs with the socket
- 	managerSocket.onerror = function(e) {
+ 	// called when websocket opens
+ 	function onWebSocketOpen(e) {
  		
- 		console.log('onerror');
- 	};
+ 		// TODO
+ 	}
  	
- 	// called when the socket closes
- 	managerSocket.onclose = function(e) {
+ 	// called when websocket errors
+ 	function onWebSocketError(e) {
  		
- 		console.log('onclose');
- 	};
+ 		// TODO
+ 	}
  	
- 	// called when we receive a message
- 	managerSocket.onmessage = function(e) {
+ 	// called when the websocket closes
+ 	function onWebSocketClose(e) {
  		
- 		console.log('onmessage');
- 	};
+ 		// TODO
+ 	}
  	
- 	// called when data is loaded via rest
- 	function onDownloadDataLoaded(data, downloadType) {
+ 	function onDownloadsMessage(downloads) {
  		
- 		// SWITCH on the tab name
- 		switch (downloadType) {
+ 	}
+ 	
+ 	function onDownloadCompleteMessage(download) {
+ 		
+ 	}
+ 	
+ 	function onDownloadFailedMessage(download) {
+ 		
+ 	}
+ 	
+ 	function onDownloadProgressMessage(download) {
+ 		
+ 	}
+ 	
+ 	// called when the websocket recieves a message
+ 	function onWebSocketMessage(e) {
+ 		
+// 		// IF there is no data
+// 		if (!e.hasOwnProperty('data')) {
+// 			
+// 			// exit
+// 			return;
+// 		}
+ 		
+ 		// get the json message
+ 		var data = JSON.parse(e.data);
+ 		
+ 		// SWITCH on the message type
+ 		switch (data.message) {
+ 		
+ 		// downnloads message
+ 		case 'downloads':
  			
- 		// pending downloads
- 		case 'pending':
+ 			// ref the active downloads
+ 			var downloads = data.downloads;
  			
- 			// set the pending downloads
- 			downloads.pending = data;
  			
- 			// exit
- 			break;
- 			
- 		// completed downloads
- 		case 'completed':
- 			
- 			// set the pending downloads
- 			downloads.completed = data;
-
- 			// exit
- 			break;
- 			
- 		// failed downloads
- 		case 'failed':
- 			
- 			// set the pending downloads
- 			downloads.failed = data;
  		}
  	}
  	
- 	// called with tab vars
- 	function onTabClick($table, statusType) {
- 		
- 		// $tbody table body
- 		var $tBody = $table.children('tbody');
- 		
-        // IF we have rows
- 		if ($tbody.find('tr').index() > 0) {
-        
-			// exit
-			return;
-        }
-		
-		// get the rows
-		$.get('/download/downloads/?status=' 
-			+ statusType + '&limit=15', function(data) {
-			
-				// call the download data handler
-				onDownloadDataLoaded(data, statusType);
-			});
- 	}
+ 	// called to connect and initiate the websocket
+ 	function connectWebSocket() {
  	
- 	// tab callbacks
- 	$('#download-tabs').on('toggled', function (event, tab) {
- 	    
- 		// get the tab name
- 		var tabName = tab.context.text;
- 		
- 		// tab vars
- 		var $table = null;
- 		var statusType = null;
- 		
- 		// SWITCH on the tab name
- 		switch (tabName) {
- 			
- 		// add links
- 		case 'Add':
+ 		// IF the websocket already exists
+ 		if (managerWebSocket != null) {
  			
  			// exit
  			return;
- 		
- 		// pending downloads
- 		case 'Pending':
- 			
- 			// set tab vars
- 			$table = $('pending-table');
- 			statusType = 'pending';
- 			
- 			// exit
- 			break;
- 			
- 		// completed downloads
- 		case 'Completed':
- 			
- 			// set tab vars
- 			$table = $('completed-table');
- 			statusType = 'completed';
-
- 			// exit
- 			break;
- 			
- 		// failed downloads
- 		case 'Failed':
- 			
- 			// set tab vars
- 			$table = $('failed-table');
- 			statusType = 'failed';
  		}
  		
- 		// call the tab click handler
- 		onTabClick($table, statusType);
- 	});
+ 		// open a websocket
+ 	 	managerWebSocket = 
+ 	 		new WebSocket('ws://' + location.host + '/websocket/manager');
+ 	 	
+ 	 	// set websocket callbacks
+ 	 	managerWebSocket.onopen = onWebSocketOpen;
+ 	 	managerWebSocket.onerror = onWebSocketError;
+ 	 	managerWebSocket.onclose = onWebSocketClose;
+ 	 	managerWebSocket.onmessage = onWebSocketMessage;
+ 	}
+ 	
+ 	// load the pending table
+ 	$('#pending-table-container').load('/download/downloads/?status=pending', connectWebSocket);
+ 	
+ 	// load the completed table
+ 	$('#completed-table-container').load('/download/downloads/?status=completed');
+ 	
+ 	// load the failed table
+ 	$('#failed-table-container').load('/download/downloads/?status=failed');
  	
  	// adds new downloads
  	$('#add-downloads').click(function(e) {
@@ -171,11 +127,4 @@
  		$('#download-url-area').val('');
  	});
  	
- 	// on initial page load
- 	$.get('/download/downloads/?status=pending&limit=15', function(data) {
- 		
- 		// call the page loaded handler
- 		onDownloadDataLoaded(data, 'pending');
- 	});
- 
  });
