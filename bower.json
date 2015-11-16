@@ -18,6 +18,8 @@
   ],
   "dependencies": {
     "jquery": "~2.1.4",
-    "foundation": "~5.5.2"
+    "foundation": "~5.5.2",
+    "watch": "*",
+    "underscore": "~1.8.3"
   }
 }
