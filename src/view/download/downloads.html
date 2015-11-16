@@ -14,7 +14,7 @@
 		{% for download in downloads %}
 			<tr>
 				<td>{{ download.id }}</td>
-				<td>{% percentage divisor="{{ download.progress }}" dividend="{{ download.length }}" %}</td>
+				<td>{% percentage download=download %}</td>
 				{% if statusType == "pending" %}
 		   			<td></td>
 		   		{% endif %}

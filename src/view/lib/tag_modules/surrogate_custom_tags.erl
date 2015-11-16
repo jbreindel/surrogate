@@ -11,5 +11,16 @@
 % Variables are the passed-in vars in your template
 
 percentage(Variables, Options) ->
-	erlang:display({variables, Variables}),
-	"50%".
+	case proplists:get_value(download, Variables) of
+		undefined ->
+			"";
+		Download ->
+			case Download:progress() of
+				0 ->
+					"0";
+				Progress ->
+					erlang:display({Download:progress(), Download:length()}),
+					Percentage = (Download:progress() / Download:length()) * 100,
+					io_lib:format("~.1f", [Percentage])
+			end
+	end.
