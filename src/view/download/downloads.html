@@ -4,7 +4,7 @@
 		   <th>Id</th>
 		   <th width="500">Url</th>
 		   <th width="200">Progress</th>
-		   {% if statusType == "pending" %}
+		   {% if status_type == "pending" %}
 		   		<th width="200">Speed</th>
 		   {% endif %}
 		   <th width="200">Status</th>
@@ -14,8 +14,8 @@
 		{% for download in downloads %}
 			<tr>
 				<td>{{ download.id }}</td>
-				<td>{% percentage download=download %}</td>
-				{% if statusType == "pending" %}
+				<td>{% percentage download=download %}%</td>
+				{% if status_type == "pending" %}
 		   			<td></td>
 		   		{% endif %}
 		   		<td>
