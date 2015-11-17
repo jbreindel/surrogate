@@ -35,6 +35,15 @@ save_downloads(Premium, [Link|Links], SavedDls) ->
 			{error, Errors}
 	end.
 
+download_completed(CompletedDownload) ->
+	Id = CompletedDownload:id(),
+	case boss_db:find(Id) of
+		{error, Error} ->
+			false;
+		Download ->
+			Download:length() == CompletedDownload:progress()
+	end.
+
 add_chunk_property(DownloadProps, JsonProps) ->
 	case proplists:get_value(chunk_size, DownloadProps) of
 		undefined ->

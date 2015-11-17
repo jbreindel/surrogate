@@ -88,7 +88,7 @@ schedule_downloads(Account, NumSimul, NumActive, DownloadsScheduled) when NumAct
 			end
 	end.
 
-schedule(Account) ->
+schedule(Account, DownloadsDict) ->
 	case boss_db:find_first(config) of
 		undefined ->
 			{error, "Cannot find Config."};
@@ -96,9 +96,10 @@ schedule(Account) ->
 			NumSimul = Config:num_simultaneous_downloads(),
 			case num_active_downloads() of
 				NumActive when NumActive < NumSimul ->
-					schedule_downloads(Account, NumSimul, NumActive, []);
+					ScheduledDownloads = schedule_downloads(Account, NumSimul, NumActive, []),
+					add_downloads(DownloadsDict, ScheduledDownloads);
 				NumActive ->
-					[]
+					DownloadsDict
 			end
 	end.
 
@@ -124,6 +125,24 @@ login_premiums(Account, RefreshedAccount) ->
 				true ->
 					ok
 			end
+	end.
+
+download_complete(Subscriber, Download) ->
+	UpdatedDownload = Download:set(status, ?DL_COMPLETED),
+	case UpdatedDownload:save() of
+		{ok, SavedDownload} ->
+			notify_subscriber(Subscriber, {manager_download_complete, [{download, SavedDownload}]});
+		{error, Errors} ->
+			notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+	end.
+
+download_failed(Subscriber, Download, Error) ->
+	UpdatedDownload = Download:set(status, ?DL_FAILED),
+	case UpdatedDownload:save() of
+		{ok, SavedDownload} ->
+			notify_subscriber(Subscriber, {manager_download_error, [{download, UpdatedDownload}, {error, Error}]});
+		{error, Errors} ->
+			notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {error, Error}]})
 	end.
 
 %%----------------------------------------------------------------------
@@ -236,7 +255,6 @@ loop(Account, Downloads, Subscriber) ->
 				[] ->
 					loop(Account, Downloads, Subscriber);
 				ScheduledDownloads ->
-					erlang:display({scheduled_downloads, ScheduledDownloads}),
 					loop(Account, add_downloads(Downloads, ScheduledDownloads), Subscriber)
 			end;
 			
@@ -273,20 +291,15 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		{download_complete, DownloadProps} ->
 			Download = proplists:get_value(download, DownloadProps),
-			UpdatedDownload = Download:set(status, ?DL_COMPLETED),
-			case UpdatedDownload:save() of
-				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_download_complete, [{download, SavedDownload}]});
-				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
-			end,
-			UpdatedDownloads = dict:erase(UpdatedDownload:id(), Downloads),
-			case schedule(Account) of
-				[] ->
-					loop(Account, UpdatedDownloads, Subscriber);
-				ScheduledDownloads ->
-					erlang:display({scheduled_downloads, ScheduledDownloads}),
-					loop(Account, add_downloads(UpdatedDownloads, ScheduledDownloads), Subscriber)
+			case download_lib:download_completed(Download) of
+				true ->
+					download_complete(Subscriber, Download),
+					ScheduledDownloads = schedule(Account, dict:erase(UpdatedDownload:id(), Downloads)),
+					loop(Account, ScheduledDownloads, Subscriber);
+				false ->
+					download_failed(Subscriber, Download, "Stream ended prematurtly."),
+					ScheduledDownloads = schedule(Account, dict:erase(Download:id(), Downloads)),
+					loop(Account, ScheduledDownloads, Subscriber)
 			end;
 		
 		%%
@@ -295,17 +308,10 @@ loop(Account, Downloads, Subscriber) ->
 		{download_error, DownloadProps} ->
 			Download = proplists:get_value(download, DownloadProps),
 			Error = proplists:get_value(error, DownloadProps),
-			erlang:display({download_error, [{download, Download}, {error, Error}]}),
-			UpdatedDownload = Download:set(status, ?DL_FAILED),
-			case UpdatedDownload:save() of
-				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_download_error, [{download, UpdatedDownload}, {error, Error}]});
-				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {error, Error}]})
-			end,
+			download_failed(Subscriber, Download, Error),
 			loop(Account, dict:erase(Download:id(), Downloads), Subscriber);
 	
-	Message ->
+		Message ->
 			erlang:display({message, Message}),
 			loop(Account, Downloads, Subscriber)
 			
