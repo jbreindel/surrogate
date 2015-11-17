@@ -22,7 +22,6 @@ pid_name(Account) ->
 notify_manager(Manager, Data) ->
 	case is_pid(Manager) of
 		true ->
-			erlang:display({notify_manager, Data}),
 			Manager ! Data;
 		false ->
 			false
@@ -31,7 +30,6 @@ notify_manager(Manager, Data) ->
 notify_websocket(WebSocket, Data) ->
 	case is_pid(WebSocket) of
 		true ->
-			erlang:display({notify_websocket, Data}),
 			WebSocket ! Data;
 		false ->
 			false
