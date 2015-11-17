@@ -130,6 +130,9 @@ download(Account, Download, SpeedOrddict) ->
 		{http, {RequestId, stream_end, Headers}} ->
 			erlang:display({stream_end, Headers}),
 			notify_manager(Account, {download_complete, [{download, Download}]})
+	after
+		5000 ->
+			notify_manager(Account, {download_error, [{download, Download}]})
 	end.
 
 execute(Account, Download) ->
