@@ -54,15 +54,12 @@
  	
  	// called when download progress changes
  	function onDownloadProgressChange(download, progress) {
- 	
- 		// set the download's progress
- 		download.progress = progress;
  		
  		// find the download row
  		findDownloadRow(download);
  		
  		// find the percentage
- 		var progressPercent = download.progress / download.length;
+ 		var progressPercent = (download.progress / download.length) * 100;
  		var roundedPercent = Math.round(progressPercent * 100) / 100;
  		
  		// ref the child table cell for progress
@@ -72,10 +69,10 @@
  		// find the meter
  		var $meter = $downloadPercentageTd.find('.meter');
  		// find the percent
- 		var $percent = $meter.find('.percent');
+ 		var $percent = $downloadPercentageTd.find('.percent');
  		
  		// set the meter's width
- 		$meter.width(roundedPercent + '%');
+ 		$meter.css('width', roundedPercent + '%');
  		// set percent value
  		$percent.text(roundedPercent + '%');
  	}
@@ -259,6 +256,12 @@
             // exit
             break;
             
+        // download progress
+ 		case 'download_progress':
+ 			
+ 			// call the download progress handler
+ 			updateActiveDownload(data.download);
+            
         // downloads saved successfully
  		case 'downloads_save':
  			
@@ -334,7 +337,7 @@
  		// TODO check urls
  		
  		// send the urls to the manager
- 		managerSocket.send(JSON.stringify({
+ 		managerWebSocket.send(JSON.stringify({
  			downloads: urls
  		}));
  		
