@@ -106,10 +106,15 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 								false ->
 									orddict:store(TimeMs, [{length, Length}], orddict:new());
 								ManagerPid ->
-									ManagerPid ! {download_progress, [{download, Download}, 
-																	  {speed, ByteCount / (TimeDiff / 1000)}, 
-																	  {chunk_size, ByteCount}]},
-									orddict:store(TimeMs, [{length, Length}], orddict:new())
+									case (TimeDiff / 1000) of
+										0 ->
+											erlang:display({error, error});
+										DeltaTime ->
+											ManagerPid ! {download_progress, [{download, Download}, 
+																			  {speed, ByteCount / DeltaTime}, 
+																			  {chunk_size, ByteCount}]},
+											orddict:store(TimeMs, [{length, Length}], orddict:new())
+									end
 							end
 					end
 			end
@@ -128,6 +133,7 @@ download(Account, Download, SpeedOrddict) ->
  			file:write_file(UpdatedDownload:file(), BinBodyPart, [append]),
 			download(Account, UpdatedDownload, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
+			%% TODO check to see if the download is actually completed
 			erlang:display({stream_end, Headers}),
 			notify_manager(Account, {download_complete, [{download, Download}]})
 	after
