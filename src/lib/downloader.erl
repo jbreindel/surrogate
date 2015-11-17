@@ -129,7 +129,7 @@ download(Account, Download, SpeedOrddict) ->
 			download(Account, UpdatedDownload, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
 			erlang:display({stream_end, Headers}),
-			notify_manager(Account, {download_completed, [{download, Download}]})
+			notify_manager(Account, {download_complete, [{download, Download}]})
 	end.
 
 execute(Account, Download) ->

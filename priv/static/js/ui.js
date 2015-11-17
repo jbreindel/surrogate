@@ -280,8 +280,8 @@
             // exit
             break;
             
-        // download has completed
- 		case 'download_completed':
+        // download has complete
+ 		case 'download_complete':
  			
  			// call download completed handler
  			onDownloadCompleted(data.download);

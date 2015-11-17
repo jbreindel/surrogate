@@ -134,6 +134,10 @@ loop(Account, WebSocket, Manager) ->
 			JsonDownload = serialize_download(<<"download_progress">>, DownloadProps),
 			notify_websocket(WebSocket, {text, JsonDownload});
 		
+		{manager_download_complete, DownloadProps} ->
+			JsonDownload = serialize_download(<<"download_complete">>, DownloadProps),
+			notify_websocket(WebSocket, {text, JsonDownload});
+		
 		{manager_download_error, DownloadErrorProps} ->
 			JsonDownload = serialize_download(<<"download_error">>, DownloadErrorProps),
 			erlang:display({manager_downloads_error, JsonDownload});
