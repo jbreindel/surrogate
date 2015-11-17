@@ -15,7 +15,7 @@
  	'use strict';
  	
  	// download arrays
- 	var activeDownloads = null;
+ 	var activeDownloads = [];
  	
  	// websocket handle
  	var managerWebSocket = null;
@@ -38,13 +38,125 @@
  		// TODO
  	}
  	
-    // handles download messages
- 	function onDownloadsMessage(downloads) {
+ 	// finds the download's row
+ 	function findDownloadRow(download) {
  		
+ 		// IF the download already found the table row
+ 		if (download.hasOwnProperty('$tr')) {
+ 			
+ 			// exit
+ 			return;
+ 		}
+ 		
+ 		// select the tr
+ 		download.$tr = $('#' + download.id + '-tr');
+ 	}
+ 	
+ 	// called when download progress changes
+ 	function onDownloadProgressChange(download, progress) {
+ 	
+ 		// set the download's progress
+ 		download.progress = progress;
+ 		
+ 		// find the download row
+ 		findDownloadRow(download);
+ 		
+ 		// find the percentage
+ 		var progressPercent = download.progress / download.length;
+ 		var roundedPercent = Math.round(progressPercent * 100) / 100;
+ 		
+ 		// ref the child table cell for progress
+ 		var $downloadPercentageTd = 
+ 			download.$tr.children('.download-percentage');
+ 		
+ 		// find the meter
+ 		var $meter = $downloadPercentageTd.find('.meter');
+ 		// find the percent
+ 		var $percent = $meter.find('.percent');
+ 		
+ 		// set the meter's width
+ 		$meter.width(roundedPercent + '%');
+ 		// set percent value
+ 		$percent.text(roundedPercent + '%');
+ 	}
+ 	
+ 	// called when download speed changes
+ 	function onDownloadSpeedChange(download, speed) {
+
+ 		// set the download's speed
+ 		download.speed = speed;
+ 		
+ 		// find the download row
+ 		findDownloadRow(download);
+ 		
+ 		// TODO more logic here to switch to smaller intervals when necessary
+ 		
+ 		// ref the speed in MB
+ 		var speedMB = download.speed / 1000000;
+ 		var roundedSpeedMB = Math.round(speedMB * 100) / 100;
+ 		
+ 		// ref the child cell for speed
+ 		var $downloadSpeedTd = 
+ 			download.$tr.children('.download-speed');
+ 		
+ 		// set the text
+ 		$downloadSpeedTd.text(roundedSpeedMB + ' MB/s');
+ 	}
+ 	
+    // handles download messages
+ 	function onDownloadsMessage(refreshedDownloads) {
+ 		
+ 		// FOR all of the downloads
+ 		for (var i = 0; i < refreshedDownloads.length; i++) {
+ 			
+ 			// ref the refreshed download
+ 			var refreshedDownload = refreshedDownloads[i];
+ 			
+ 			// find the active download
+ 			var activeDownload = 
+ 				_.findWhere(activeDownloads, {id: refreshedDownload.id});
+ 			
+ 			// IF the download cannot be found
+ 			if (typeof (activeDownload) !== 'undefined') {
+ 				
+ 				// set the active download props
+ 				activeDownload.progress = refreshedDownload.progress;
+ 				activeDownload.speed = refreshedDownload.speed;
+ 				
+ 				// next
+ 				continue;
+ 			}
+
+			// add the download
+			activeDownloads.push(refreshedDownload);
+			
+			// watch the download progress
+			watch(refreshedDownload, 'progress', 
+					function(prop, action, newvalue, oldvalue) {
+				
+				// prevent further changes
+				WatchJS.noMore = true;
+				
+				// call progress handler
+				onDownloadProgressChange(refreshedDownload, newvalue);
+			});
+			
+			// observe download speed
+			watch(refreshedDownload, 'speed', 
+					function(prop, action, newvalue, oldvalue) {
+				
+				// prevent further changes
+				WatchJS.noMore = true;
+				
+				// call speed handler
+				onDownloadSpeedChange(refreshedDownload, newvalue);
+			});
+ 		}
  	}
  	
     // handles download complete messages
  	function onDownloadCompleteMessage(download) {
+ 		
  		
  	}
  	

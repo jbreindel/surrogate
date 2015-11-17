@@ -2,7 +2,7 @@
 	<thead>
 		 <tr>
 		   <th>Id</th>
-		   <th width="500">Url</th>
+		   <th width="500">File</th>
 		   <th width="200">Progress</th>
 		   {% if status_type == "pending" %}
 		   		<th width="200">Speed</th>
@@ -12,14 +12,20 @@
 	</thead>
 	<tbody id="{{ status_type }}-table-body">
 		{% for download in downloads %}
-			<tr>
-				<td>{{ download.id }}</td>
-				<td>{{ download.file }}</td>
-				<td>{% percentage download=download %}%</td>
+			<tr id="{{ download.id }}-tr">
+				<td class="download-id">{{ download.id }}</td>
+				<td class="download-file">{{ download.file }}</td>
+				<td class="download-percentage">
+					<div class="progress">
+                		<span class="meter teal" style="width: {% percentage download=download %}%">
+                      		<p class="percent">{% percentage download=download %}%</p>
+                		</span>
+              		</div>
+				</td>
 				{% if status_type == "pending" %}
-		   			<td></td>
+		   			<td class="download-speed"></td>
 		   		{% endif %}
-		   		<td>
+		   		<td class="download-status">
 		   			{% if download.status == 0 %}
 		   				Pending
 		   			{% elif download.status == 1 %}
