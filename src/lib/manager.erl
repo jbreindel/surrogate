@@ -127,6 +127,34 @@ login_premiums(Account, RefreshedAccount) ->
 			end
 	end.
 
+download_not_found(Subscriber, Download) ->
+	UpdatedDownload = Download:set(status, ?DL_NOT_FOUND),
+	case UpdatedDownload:save() of
+		{ok, SavedDownload} ->
+			notify_subscriber(Subscriber, {manager_download_not_found, [{download, Download}]});
+		{error, Errors} ->
+			notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+	end.
+
+download_acquire(Subscriber, Download, RealUrl) ->
+	AcquiredDownload = Download:set([{status, ?DL_ACQUIRED}, {real_url, RealUrl}]),
+	case AcquiredDownload:save() of
+		{ok, SavedAcquiredDownload} ->
+			erlang:display({manager_download_acquired, [{download, SavedAcquiredDownload}]}),
+			notify_subscriber(Subscriber, {manager_download_acquired, [{download, SavedAcquiredDownload}]});
+		{error, Errors} ->
+			notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+	end.
+
+download_start(Subscriber, Download) ->
+	UpdatedDownload = Download:set(status, ?DL_ACTIVE),
+	case UpdatedDownload:save() of
+		{ok, SavedDownload} ->
+			notify_subscriber(Subscriber, {manager_download_started, [{download, Download}]});
+		{error, Errors} ->
+			notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+	end.
+
 download_complete(Subscriber, Download) ->
 	UpdatedDownload = Download:set(status, ?DL_COMPLETED),
 	case UpdatedDownload:save() of
@@ -136,7 +164,7 @@ download_complete(Subscriber, Download) ->
 			notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 	end.
 
-download_failed(Subscriber, Download, Error) ->
+download_fail(Subscriber, Download, Error) ->
 	UpdatedDownload = Download:set(status, ?DL_FAILED),
 	case UpdatedDownload:save() of
 		{ok, SavedDownload} ->
@@ -229,47 +257,25 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		{download_not_found, DownloadProps} ->
 			[{download, Download}] = DownloadProps,
-			UpdatedDownload = Download:set(status, ?DL_NOT_FOUND),
-			case UpdatedDownload:save() of
-				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_download_not_found, [{download, Download}]});
-				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
-			end,
-			loop(Account, dict:store(Download:id(), DownloadProps, Downloads), Subscriber);
+			download_not_found(Subscriber, Download),
+			ScheduledDownloads = schedule(Account, dict:erase(Download:id(), Downloads)),
+			loop(Account, ScheduledDownloads, Subscriber);
 		
 		%%
 		% download has been accquired
 		%%
 		{download_acquired, DownloadProps} ->
 			[{download, Download}, {real_url, RealUrl}] = DownloadProps,
-			AcquiredDownload = Download:set([{status, ?DL_ACQUIRED}, {real_url, RealUrl}]),
-			case AcquiredDownload:save() of
-				{ok, SavedAcquiredDownload} ->
-					erlang:display({manager_download_acquired, [{download, SavedAcquiredDownload}]}),
-					notify_subscriber(Subscriber, {manager_download_acquired, [{download, SavedAcquiredDownload}]});
-				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
-			end,
-			case schedule(Account) of
-				[] ->
-					loop(Account, Downloads, Subscriber);
-				ScheduledDownloads ->
-					loop(Account, add_downloads(Downloads, ScheduledDownloads), Subscriber)
-			end;
+			download_acquire(Subscriber, Download, RealUrl),
+			ScheduledDownloads = schedule(Account, Downloads),
+			loop(Account, ScheduledDownloads, Subscriber);
 			
 		%%
 		% download has started
 		%%
 		{download_started, DownloadProps} ->
 			Download = proplists:get_value(download, DownloadProps),
-			UpdatedDownload = Download:set(status, ?DL_ACTIVE),
-			case UpdatedDownload:save() of
-				{ok, SavedDownload} ->
-					notify_subscriber(Subscriber, {manager_download_started, [{download, Download}]});
-				{error, Errors} ->
-					notify_subscriber(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
-			end,
+			download_start(Subscriber, Download),
 			loop(Account, Downloads, Subscriber);
 		
 		%%
@@ -293,14 +299,12 @@ loop(Account, Downloads, Subscriber) ->
 			Download = proplists:get_value(download, DownloadProps),
 			case download_lib:download_completed(Download) of
 				true ->
-					download_complete(Subscriber, Download),
-					ScheduledDownloads = schedule(Account, dict:erase(UpdatedDownload:id(), Downloads)),
-					loop(Account, ScheduledDownloads, Subscriber);
+					download_complete(Subscriber, Download);
 				false ->
-					download_failed(Subscriber, Download, "Stream ended prematurtly."),
-					ScheduledDownloads = schedule(Account, dict:erase(Download:id(), Downloads)),
-					loop(Account, ScheduledDownloads, Subscriber)
-			end;
+					download_fail(Subscriber, Download, "Stream ended prematurtly.")
+			end,
+			ScheduledDownloads = schedule(Account, dict:erase(Download:id(), Downloads)),
+			loop(Account, ScheduledDownloads, Subscriber);
 		
 		%%
 		% download has errored
@@ -308,8 +312,9 @@ loop(Account, Downloads, Subscriber) ->
 		{download_error, DownloadProps} ->
 			Download = proplists:get_value(download, DownloadProps),
 			Error = proplists:get_value(error, DownloadProps),
-			download_failed(Subscriber, Download, Error),
-			loop(Account, dict:erase(Download:id(), Downloads), Subscriber);
+			download_fail(Subscriber, Download, Error),
+			ScheduledDownloads = schedule(Account, dict:erase(Download:id(), Downloads)),
+			loop(Account, ScheduledDownloads, Subscriber);
 	
 		Message ->
 			erlang:display({message, Message}),
