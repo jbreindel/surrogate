@@ -24,3 +24,11 @@ percentage(Variables, Options) ->
 					io_lib:format("~.1f", [Percentage])
 			end
 	end.
+
+download_id(Variables, Options) ->
+	case proplists:get_value(download, Variables) of
+		undefined ->
+			"";
+		Download ->
+			string:substr(Download:id(), 8)
+	end.

@@ -22,20 +22,20 @@
  	
  	// called when websocket opens
  	function onWebSocketOpen(e) {
- 		
- 		// TODO
+
+ 		// TODO populate connected alert
  	}
  	
  	// called when websocket errors
  	function onWebSocketError(e) {
- 		
- 		// TODO
+
+ 		// TODO populate error alert
  	}
  	
  	// called when the websocket closes
  	function onWebSocketClose(e) {
- 		
- 		// TODO
+
+ 		// TODO populate closed alert
  	}
  	
  	// finds the download's row
@@ -103,6 +103,50 @@
  		$downloadSpeedTd.text(roundedSpeedMB + ' MB/s');
  	}
  	
+ 	// called to update the active download
+ 	function updateActiveDownload(refreshedDownload) {
+ 		
+		// find the active download
+		var activeDownload = 
+			_.findWhere(activeDownloads, {id: refreshedDownload.id});
+		
+		// IF the download cannot be found
+		if (typeof (activeDownload) !== 'undefined') {
+			
+			// set the active download props
+			activeDownload.progress = refreshedDownload.progress;
+			activeDownload.speed = refreshedDownload.speed;
+			
+			// exit
+			return;
+		}
+
+		// add the download
+		activeDownloads.push(refreshedDownload);
+		
+		// watch the download progress
+		watch(refreshedDownload, 'progress', 
+				function(prop, action, newvalue, oldvalue) {
+			
+			// prevent further changes
+			WatchJS.noMore = true;
+			
+			// call progress handler
+			onDownloadProgressChange(refreshedDownload, newvalue);
+		});
+		
+		// observe download speed
+		watch(refreshedDownload, 'speed', 
+				function(prop, action, newvalue, oldvalue) {
+			
+			// prevent further changes
+			WatchJS.noMore = true;
+			
+			// call speed handler
+			onDownloadSpeedChange(refreshedDownload, newvalue);
+		});
+ 	}
+ 	
     // handles download messages
  	function onDownloadsMessage(refreshedDownloads) {
  		
@@ -112,62 +156,82 @@
  			// ref the refreshed download
  			var refreshedDownload = refreshedDownloads[i];
  			
- 			// find the active download
- 			var activeDownload = 
- 				_.findWhere(activeDownloads, {id: refreshedDownload.id});
- 			
- 			// IF the download cannot be found
- 			if (typeof (activeDownload) !== 'undefined') {
- 				
- 				// set the active download props
- 				activeDownload.progress = refreshedDownload.progress;
- 				activeDownload.speed = refreshedDownload.speed;
- 				
- 				// next
- 				continue;
- 			}
-
-			// add the download
-			activeDownloads.push(refreshedDownload);
-			
-			// watch the download progress
-			watch(refreshedDownload, 'progress', 
-					function(prop, action, newvalue, oldvalue) {
-				
-				// prevent further changes
-				WatchJS.noMore = true;
-				
-				// call progress handler
-				onDownloadProgressChange(refreshedDownload, newvalue);
-			});
-			
-			// observe download speed
-			watch(refreshedDownload, 'speed', 
-					function(prop, action, newvalue, oldvalue) {
-				
-				// prevent further changes
-				WatchJS.noMore = true;
-				
-				// call speed handler
-				onDownloadSpeedChange(refreshedDownload, newvalue);
-			});
+ 			// update the active download
+ 			updateActiveDownload(refreshedDownload);
  		}
+ 	}
+ 	
+ 	// reloads all tables
+ 	function reloadTables() {
+ 		
+ 		// call reload all tables
+ 		reloadTables(['pending', 'completed', 'failed']);
+ 	}
+ 	
+ 	// called to reload all the tables
+ 	function reloadTables(tables) {
+ 	 	
+ 		// IF the tables contains pending
+ 		if (_.contains(tables, 'pending')) {
+ 			
+ 			// unwatch everything
+ 	 		unwatchAll();
+ 	 		
+ 	 		// set the active downloads
+ 	 		activeDownloads = [];
+ 	 		
+ 	 	 	// load the pending table
+ 	 	 	$('#pending-table-container').load('/download/downloads/?status=pending');	
+ 	 	 	
+ 	 	 	// send a message to the websocket to refresh
+ 	 		managerSocket.send(JSON.stringify({
+ 	 			refresh: 'refresh'
+ 	 		}));
+ 		}
+ 		
+ 		// IF the tables contain completed
+ 		if (_.contains(tables, 'completed')) {
+ 			
+ 	 	 	// load the completed table
+ 	 	 	$('#completed-table-container').load('/download/downloads/?status=completed');
+ 		}
+ 		
+ 		// IF the tables contain failed
+ 		if (_.contains(tables, 'failed')) {
+
+ 	 	 	// load the failed table
+ 	 	 	$('#failed-table-container').load('/download/downloads/?status=failed');
+ 		}
+ 	}
+ 	
+ 	// handles call when downloads are saved
+ 	function onDownloadsSavedMessage() {
+ 		
+ 		// TODO populate saved alert
+ 		
+ 		// refresh the tables
+ 		reloadTables();
  	}
  	
     // handles download complete messages
  	function onDownloadCompleteMessage(download) {
- 		
- 		
+
+ 		// refresh the tables
+ 		reloadTables(['pending', 'completed']);
  	}
  	
     // handles failed download messages
  	function onDownloadFailedMessage(download) {
- 		
+
+ 		// refresh the tables
+ 		reloadTables(['pending', 'failed']); 		
  	}
  	
     // called when we get a download progress message
  	function onDownloadProgressMessage(download) {
  		
+ 		// update the active download
+ 		updateActiveDownload(download);
  	}
  	
  	// called when the websocket recieves a message
@@ -191,6 +255,43 @@
  			
             // call download handler
             onDownloadsMessage(data.downloads);
+            
+            // exit
+            break;
+            
+        // downloads saved successfully
+ 		case 'downloads_save':
+ 			
+ 			// call download save handler
+ 			onDownloadsSavedMessage(data.downloads);
+
+            // exit
+            break;
+            
+ 		// download has been acquired
+ 		case 'download_acquired':
+ 			
+ 			// call download acquired handler
+ 			onDownloadAcquired(data.download);
+
+            // exit
+            break;
+            
+        // download has completed
+ 		case 'download_completed':
+ 			
+ 			// call download completed handler
+ 			onDownloadCompleted(data.download);
+ 			
+ 			// exit
+ 			break;
+ 			
+ 		// download has failed
+ 		case 'download_failed':
+ 		case 'download_error':
+ 			
+ 			// call download failed handler
+ 			onDownloadFailedMessage(data.download);
  		}
  	}
  	
