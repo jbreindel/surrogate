@@ -17,9 +17,8 @@
 				<td class="download-file">{{ download.file }}</td>
 				<td class="download-percentage">
 					<div class="progress">
-                		<span class="meter teal" style="width: {% percentage download=download %}%">
-                      		<p class="percent">{% percentage download=download %}%</p>
-                		</span>
+						<p class="percent">{% percentage download=download %}%</p>
+                		<span class="meter teal" style="width: {% percentage download=download %}%"></span>
               		</div>
 				</td>
 				{% if status_type == "pending" %}

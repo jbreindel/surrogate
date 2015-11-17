@@ -1,31 +1,30 @@
 .progress {
 	margin: 0 auto 2rem auto;
-	padding:0;
-	width:90%;
-	height:30px;
-	overflow:hidden;
-	background:#e5e5e5;
-	border-radius:6px;
+	padding: 0;
+	width: 90%;
+	height: 30px;
+	overflow: hidden;
+	background: #e5e5e5;
+	border-radius: 6px;
 }
 
 .meter {
-	position:relative;
-	float:left;
-	min-width:1%;
-	height:100%;
+	position: relative;
+	float: left;
+	min-width: 1%;
+	height: 100%;
 }
 
 .percent {
-	position:absolute;
-	top:50%;
-	left:50%;
-	// transform:translate(-50%,-50%);
-	margin:0;
-	font-family:tahoma,arial,helvetica;
-	font-size:12px;
-	color:$primary-color;
+	position: absolute;
+	transform: translate(50%, 25%);
+	z-index: 999;
+	margin: 0;
+	font-family: tahoma,arial,helvetica;
+	font-size: 12px;
+	color: $primary-color;
 }
 
 .meter.teal {
-	background:$secondary-color;
+	background: $secondary-color;
 }
