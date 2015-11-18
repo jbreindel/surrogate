@@ -19,7 +19,6 @@ var sass = require('gulp-sass');
 var concat = require('gulp-concat');
 var bower = require('gulp-bower');
 var streamqueue = require('streamqueue');
-var rename = require('gulp-rename');
 
 // directories
 var SASS_DIR = './priv/static/sass/';
