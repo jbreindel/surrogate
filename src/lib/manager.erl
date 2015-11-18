@@ -226,7 +226,11 @@ loop(Account, Downloads, Subscriber) ->
 			case download_lib:save_downloads(Account:first_premium(), DownloadLinkArray) of
 				{ok, SavedDownloads} ->
 					erlang:spawn(acquirer, acquire_downloads, [Account, SavedDownloads]),
-					notify_subscriber(Subscriber, {manager_downloads_saved, SavedDownloads}),
+					SubscriberDownloads = lists:map(fun(SavedDownload) -> 
+														{SavedDownload:id(), [{download, SavedDownload}]} 
+													end, 
+													SavedDownloads),
+					notify_subscriber(Subscriber, {manager_downloads_saved, SubscriberDownloads}),
 					loop(Account, Downloads, Subscriber);
 				{error, Error} ->
 					erlang:display({manager_downloads_error, Error}),
