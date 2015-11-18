@@ -170,9 +170,6 @@
  	 	
  		// IF the tables contains pending
  		if (_.contains(tables, 'pending')) {
- 			
- 			// unwatch everything
- 	 		unwatchAll();
  	 		
  	 		// set the active downloads
  	 		activeDownloads = [];
