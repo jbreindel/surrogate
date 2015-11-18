@@ -224,6 +224,12 @@
  		reloadTables(['pending', 'failed']); 		
  	}
  	
+ 	function onDownloadAcquiredMessage(download) {
+ 		
+ 		// refresh tables
+ 		reloadTables(['pending']);
+ 	}
+ 	
     // called when we get a download progress message
  	function onDownloadProgressMessage(download) {
  		
@@ -275,7 +281,7 @@
  		case 'download_acquired':
  			
  			// call download acquired handler
- 			onDownloadAcquired(data.download);
+ 			onDownloadAcquiredMessage(data.download);
 
             // exit
             break;
@@ -284,7 +290,7 @@
  		case 'download_complete':
  			
  			// call download completed handler
- 			onDownloadCompleted(data.download);
+ 			onDownloadCompleteMessage(data.download);
  			
  			// exit
  			break;
