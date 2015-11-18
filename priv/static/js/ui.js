@@ -267,6 +267,9 @@
  			
  			// call the download progress handler
  			updateActiveDownload(data.download);
+ 			
+ 			// exit
+ 			break;
             
         // downloads saved successfully
  		case 'downloads_save':
