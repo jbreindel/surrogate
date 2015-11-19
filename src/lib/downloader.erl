@@ -80,7 +80,12 @@ calc_byte_sum([], Sum) ->
 	Sum;
 calc_byte_sum([Elem|Elems], Sum) ->
 	{_, LengthProps} = Elem,
-	calc_byte_sum(Elems, Sum + proplists:get_value(length, LengthProps)).
+	case proplists:get_value(length, LengthProps) of
+		undefined ->
+			calc_byte_sum(Elems, Sum);
+		Length ->
+			calc_byte_sum(Elems, Sum + Length)
+	end.
 
 update_speed(Account, Download, SpeedOrddict, Length) ->
 	TimeMs = date_lib:now_to_milliseconds_hires(now()),
