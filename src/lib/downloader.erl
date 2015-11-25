@@ -125,18 +125,18 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 			end
 	end.
 
-download(Account, Download, SpeedOrddict) ->
+download(Account, Download, File, SpeedOrddict) ->
 	receive
 		{http, {RequestId, stream_start, Headers}} ->
 			erlang:display({stream_start, Headers}),
 			notify_manager(Account, {download_started, [{download, Download}]}),
-			download(Account, Download, SpeedOrddict);
+			download(Account, Download, File, SpeedOrddict);
 		{http, {RequestId, stream, BinBodyPart}} ->
 			ByteSize = byte_size(BinBodyPart),
 			UpdatedDownload = Download:set(progress, Download:progress() + ByteSize),
 			UpdatedSpeedOrdict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
- 			file:write_file(UpdatedDownload:file(), BinBodyPart, [append]),
-			download(Account, UpdatedDownload, UpdatedSpeedOrdict);
+ 			file:write(UpdatedDownload:file(), BinBodyPart),
+			download(Account, UpdatedDownload, File, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
 			%% TODO check to see if the download is actually completed
 			erlang:display({stream_end, Headers}),
@@ -154,7 +154,8 @@ execute(Account, Download) ->
 				   {"Accept-Language", "en-US,en;q=0.8"}],
 			case httpc:request(get, {UpdatedDownload:real_url(), Headers}, [], [{sync, false}, {stream, self}, {receiver, self()}, {body_format, binary}], HttpClient) of
 				{ok, RequestId} ->
-					download(Account, UpdatedDownload, orddict:new())
+					File = file:open(UpdatedDownload:file(), [append]),
+					download(Account, UpdatedDownload, File, orddict:new())
 			end;
 		{error, Errors} ->
 			erlang:display({content_disposition, Download})
