@@ -60,22 +60,6 @@ download_file(FileName) ->
 			Config:download_directory() ++ FileName
 	end.
 
-list_min([H|T]) -> 
-	list_min(H, T).
-
-list_min(X, []) -> 
-	X;
-list_min(X, [H|T]) -> 
-	list_min(erlang:min(H, X), T).
-
-list_max([H|T]) -> 
-	list_max(H, T).
-
-list_max(X, []) -> 
-	X;
-list_max(X, [H|T]) -> 
-	list_max(erlang:max(H, X), T).
-
 calc_byte_sum([], Sum) ->
 	Sum;
 calc_byte_sum([Elem|Elems], Sum) ->
@@ -94,14 +78,14 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 			orddict:store(TimeMs, [{length, Length}], SpeedOrddict);
 		false ->
 			Timestamps = orddict:fetch_keys(SpeedOrddict),
-			EarliestTimeMs = list_min(Timestamps),
+			EarliestTimeMs = list_lib:list_min(Timestamps),
 			case TimeMs - EarliestTimeMs of
 				Diff when Diff < 1000 ->
 					orddict:store(TimeMs, [{length, Length}], SpeedOrddict);
 				Diff when Diff >= 1000 ->
 					ByteCount = calc_byte_sum(orddict:to_list(SpeedOrddict), 0),
-					Max = list_max(Timestamps),
-					Min = list_min(Timestamps),
+					Max = list_lib:list_max(Timestamps),
+					Min = list_lib:list_min(Timestamps),
 					TimeDiff = Max - Min,
 					case subscriber:alive(Account) of
 						false ->
