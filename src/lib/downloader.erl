@@ -14,14 +14,6 @@
 -module(downloader).
 -export([execute/2]).
 
-notify_manager(Account, Data) ->
-	case manager:alive(Account) of
-		false ->
-			false;
-		Pid ->
-			Pid ! Data
-	end.
-
 parse_file_name(FileName) ->
 	case string:str(FileName, "\"") of
 		0 ->
@@ -113,7 +105,8 @@ download(Account, Download, File, SpeedOrddict) ->
 	receive
 		{http, {RequestId, stream_start, Headers}} ->
 			erlang:display({stream_start, Headers}),
-			notify_manager(Account, {download_started, [{download, Download}]}),
+			ManagerName = manager:pid_name(Account),
+			proc_lib:find_send(ManagerName, {download_started, [{download, Download}]}),
 			download(Account, Download, File, SpeedOrddict);
 		{http, {RequestId, stream, BinBodyPart}} ->
 			ByteSize = byte_size(BinBodyPart),
@@ -124,10 +117,12 @@ download(Account, Download, File, SpeedOrddict) ->
 		{http, {RequestId, stream_end, Headers}} ->
 			%% TODO check to see if the download is actually completed
 			erlang:display({stream_end, Headers}),
-			notify_manager(Account, {download_complete, [{download, Download}]})
+			ManagerName = manager:pid_name(Account),
+			proc_lib:find_send(ManagerName, {download_complete, [{download, Download}]})
 	after
 		5000 ->
-			notify_manager(Account, {download_error, [{download, Download}]})
+			ManagerName = manager:pid_name(Account),
+			proc_lib:find_send(ManagerName, {download_error, [{download, Download}]})
 	end.
 
 execute(Account, Download) ->

@@ -19,22 +19,6 @@
 pid_name(Account) ->
 	list_to_atom(Account:id() ++ "-subscriber").
 
-notify_manager(Manager, Data) ->
-	case is_pid(Manager) of
-		true ->
-			Manager ! Data;
-		false ->
-			false
-	end.
-
-notify_websocket(WebSocket, Data) ->
-	case is_pid(WebSocket) of
-		true ->
-			WebSocket ! Data;
-		false ->
-			false
-	end.
-
 alive(Account) ->
 	SubscriberName = pid_name(Account),
 	case whereis(SubscriberName) of 
@@ -81,7 +65,7 @@ loop(Account, WebSocket) ->
 		undefined ->
 			undefined;
 		Manager ->
-			notify_manager(Manager, {subscriber_connect, self()}),
+			proc_lib:cond_send(Manager, {subscriber_connect, self()}),
 			loop(Account, WebSocket, Manager)
 	end.
 
@@ -96,16 +80,16 @@ loop(Account, WebSocket, Manager) ->
 			erlang:display({websocket_message, Message}),
 			case mochijson:decode(binary_to_list(Message)) of
 				{struct, [{"downloads", {array, DownloadsArray}}]} ->
-					notify_manager(Manager, {subscriber_downloads, DownloadsArray});
+					proc_lib:cond_send(Manager, {subscriber_downloads, DownloadsArray});
 				{struct, [{"refresh", _}]} ->
-					notify_manager(Manager, {subscriber_refresh, undefined});
+					proc_lib:cond_send(Manager, {subscriber_refresh, undefined});
 				Json ->
 					erlang:display(Json)
 			end;
 		
 		{websocket_close, _} ->
 			erlang:display({websocket_close, undefined}),
-			notify_manager(Manager, {subscriber_disconnect, undefined}),
+			proc_lib:cond_send(Manager, {subscriber_disconnect, undefined}),
 			exit(normal);
 		
 		%%%%%%%%%%%%%%%%%%%%%%
@@ -114,27 +98,27 @@ loop(Account, WebSocket, Manager) ->
 
 		{manager_downloads, Downloads} ->
 			JsonDownloads = serialize_downloads(<<"downloads">>, Downloads),
-			notify_websocket(WebSocket, {text, JsonDownloads});
+			proc_lib:cond_send(WebSocket, {text, JsonDownloads});
 
 		{manager_downloads_saved, Downloads} ->
 			JsonDownloads = serialize_downloads(<<"downloads_save">>, Downloads),
-			notify_websocket(WebSocket, {text, JsonDownloads});
+			proc_lib:cond_send(WebSocket, {text, JsonDownloads});
 
 		{manager_download_acquired, DownloadProps} ->
 			JsonDownload = serialize_download(<<"download_acquired">>, DownloadProps),
-			notify_websocket(WebSocket, {text, JsonDownload});
+			proc_lib:cond_send(WebSocket, {text, JsonDownload});
 		
 		{manager_download_not_found, DownloadProps} ->
 			JsonDownload = serialize_download(<<"download_not_found">>, DownloadProps),
-			notify_websocket(WebSocket, {text, JsonDownload});
+			proc_lib:cond_send(WebSocket, {text, JsonDownload});
 		
 		{manager_download_progress, DownloadProps} ->
 			JsonDownload = serialize_download(<<"download_progress">>, DownloadProps),
-			notify_websocket(WebSocket, {text, JsonDownload});
+			proc_lib:cond_send(WebSocket, {text, JsonDownload});
 		
 		{manager_download_complete, DownloadProps} ->
 			JsonDownload = serialize_download(<<"download_complete">>, DownloadProps),
-			notify_websocket(WebSocket, {text, JsonDownload});
+			proc_lib:cond_send(WebSocket, {text, JsonDownload});
 		
 		{manager_download_error, DownloadErrorProps} ->
 			JsonDownload = serialize_download(<<"download_error">>, DownloadErrorProps),

@@ -16,14 +16,6 @@
 -export([acquire/2, acquire_downloads/2]).
 -include("download_status.hrl").
 
-notify_manager(Account, Data) ->
-	case manager:alive(Account) of
-		false ->
-			false;
-		Pid ->
-			Pid ! Data
-	end.
-
 url_end_index(UrlStart, Body) ->
 	case lists:nth(UrlStart, Body) of
 		Char when Char =:= $' ->
@@ -51,12 +43,13 @@ acquire(Account, Download) ->
 			   {"Accept-Language", "en-US,en;q=0.8"}],
 	case httpc:request(get, {Download:display_url(), Headers}, [], [], HttpClient) of
 		{ok, {{Version, 200, ReasonPhrase}, RespHeaders, Body}} ->
+			ManagerName = manager:pid_name(Account),
 			case parse_download_url(Body) of
 				undefined ->
-					notify_manager(Account, {download_not_found, [{download, Download}]});
+					proc_lib:cond_send(Account, {download_not_found, [{download, Download}]});
 				RealUrl ->
 					erlang:display({download_acquired, [{real_url, RealUrl}, {account, Account}]}),
-					notify_manager(Account, {download_acquired, [{download, Download}, {real_url, RealUrl}]})
+					proc_lib:cond_send(Account, {download_acquired, [{download, Download}, {real_url, RealUrl}]})
 			end;
 		Request ->
 			erlang:display(Request),
