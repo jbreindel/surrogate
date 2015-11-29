@@ -63,6 +63,23 @@ calc_byte_sum([Elem|Elems], Sum) ->
 			calc_byte_sum(Elems, Sum + Length)
 	end.
 
+notify_manager(Account, Download, Length, Now, Timestamps, SpeedOrddict) ->
+	ByteCount = calc_byte_sum(orddict:to_list(SpeedOrddict), 0),
+	Max = list_lib:list_max(Timestamps),
+	Min = list_lib:list_min(Timestamps),
+	TimeDiff = Max - Min,
+	case (TimeDiff / 1000) of
+		0 ->
+			erlang:display({error, TimeDiff}),
+			orddict:store(Now, [{length, Length}], orddict:new());
+		DeltaTime ->
+			ManagerName = manager:pid_name(Account),
+			process_lib:find_send(ManagerName, {download_progress, [{download, Download}, 
+											  {speed, ByteCount / DeltaTime}, 
+											  {chunk_size, ByteCount}]}),
+			orddict:store(Now, [{length, Length}], orddict:new())
+	end.
+
 update_speed(Account, Download, SpeedOrddict, Length) ->
 	TimeMs = date_lib:now_to_milliseconds_hires(now()),
 	case orddict:is_empty(SpeedOrddict) of
@@ -75,29 +92,7 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 				Diff when Diff < 1000 ->
 					orddict:store(TimeMs, [{length, Length}], SpeedOrddict);
 				Diff when Diff >= 1000 ->
-					ByteCount = calc_byte_sum(orddict:to_list(SpeedOrddict), 0),
-					Max = list_lib:list_max(Timestamps),
-					Min = list_lib:list_min(Timestamps),
-					TimeDiff = Max - Min,
-					case subscriber:alive(Account) of
-						false ->
-							orddict:store(TimeMs, [{length, Length}], orddict:new());
-						SubscriberPid ->
-							case manager:alive(Account) of
-								false ->
-									orddict:store(TimeMs, [{length, Length}], orddict:new());
-								ManagerPid ->
-									case (TimeDiff / 1000) of
-										0 ->
-											erlang:display({error, error});
-										DeltaTime ->
-											ManagerPid ! {download_progress, [{download, Download}, 
-																			  {speed, ByteCount / DeltaTime}, 
-																			  {chunk_size, ByteCount}]},
-											orddict:store(TimeMs, [{length, Length}], orddict:new())
-									end
-							end
-					end
+					notify_manager(Account, Download, Length, TimeMs, Timestamps, SpeedOrddict)
 			end
 	end.
 
@@ -106,23 +101,22 @@ download(Account, Download, File, SpeedOrddict) ->
 		{http, {RequestId, stream_start, Headers}} ->
 			erlang:display({stream_start, Headers}),
 			ManagerName = manager:pid_name(Account),
-			proc_lib:find_send(ManagerName, {download_started, [{download, Download}]}),
+			process_lib:find_send(ManagerName, {download_started, [{download, Download}]}),
 			download(Account, Download, File, SpeedOrddict);
 		{http, {RequestId, stream, BinBodyPart}} ->
+			erlang:display({requestId, RequestId}),
 			ByteSize = byte_size(BinBodyPart),
 			UpdatedDownload = Download:set(progress, Download:progress() + ByteSize),
 			UpdatedSpeedOrdict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
- 			file:write(UpdatedDownload:file(), BinBodyPart),
+ 			file:write(File, BinBodyPart),
 			download(Account, UpdatedDownload, File, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
-			%% TODO check to see if the download is actually completed
-			erlang:display({stream_end, Headers}),
 			ManagerName = manager:pid_name(Account),
-			proc_lib:find_send(ManagerName, {download_complete, [{download, Download}]})
+			process_lib:find_send(ManagerName, {download_complete, [{download, Download}]})
 	after
 		5000 ->
 			ManagerName = manager:pid_name(Account),
-			proc_lib:find_send(ManagerName, {download_error, [{download, Download}]})
+			process_lib:find_send(ManagerName, {download_error, [{download, Download}]})
 	end.
 
 execute(Account, Download) ->

@@ -13,7 +13,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -module(manager).
--export([pid_name/1, alive/1, start/1, loop/1]).
+-export([pid_name/1, start/1, loop/1]).
 -include("download_status.hrl").
 
 pid_name(Account) ->
@@ -114,9 +114,9 @@ download_not_found(Subscriber, Download) ->
 	UpdatedDownload = Download:set(status, ?DL_NOT_FOUND),
 	case UpdatedDownload:save() of
 		{ok, SavedDownload} ->
-			proc_lib:cond_send(Subscriber, {manager_download_not_found, [{download, Download}]});
+			process_lib:cond_send(Subscriber, {manager_download_not_found, [{download, Download}]});
 		{error, Errors} ->
-			proc_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+			process_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 	end.
 
 download_acquire(Subscriber, Download, RealUrl) ->
@@ -124,36 +124,36 @@ download_acquire(Subscriber, Download, RealUrl) ->
 	case AcquiredDownload:save() of
 		{ok, SavedAcquiredDownload} ->
 			erlang:display({manager_download_acquired, [{download, SavedAcquiredDownload}]}),
-			proc_lib:cond_send(Subscriber, {manager_download_acquired, [{download, SavedAcquiredDownload}]});
+			process_lib:cond_send(Subscriber, {manager_download_acquired, [{download, SavedAcquiredDownload}]});
 		{error, Errors} ->
-			proc_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+			process_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 	end.
 
 download_start(Subscriber, Download) ->
 	UpdatedDownload = Download:set(status, ?DL_ACTIVE),
 	case UpdatedDownload:save() of
 		{ok, SavedDownload} ->
-			proc_lib:cond_send(Subscriber, {manager_download_started, [{download, Download}]});
+			process_lib:cond_send(Subscriber, {manager_download_started, [{download, Download}]});
 		{error, Errors} ->
-			proc_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+			process_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 	end.
 
 download_complete(Subscriber, Download) ->
 	UpdatedDownload = Download:set(status, ?DL_COMPLETED),
 	case UpdatedDownload:save() of
 		{ok, SavedDownload} ->
-			proc_lib:cond_send(Subscriber, {manager_download_complete, [{download, SavedDownload}]});
+			process_lib:cond_send(Subscriber, {manager_download_complete, [{download, SavedDownload}]});
 		{error, Errors} ->
-			proc_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
+			process_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {errors, Errors}]})
 	end.
 
 download_fail(Subscriber, Download, Error) ->
 	UpdatedDownload = Download:set(status, ?DL_FAILED),
 	case UpdatedDownload:save() of
 		{ok, SavedDownload} ->
-			proc_lib:cond_send(Subscriber, {manager_download_error, [{download, UpdatedDownload}, {error, Error}]});
+			process_lib:cond_send(Subscriber, {manager_download_error, [{download, UpdatedDownload}, {error, Error}]});
 		{error, Errors} ->
-			proc_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {error, Error}]})
+			process_lib:cond_send(Subscriber, {manager_download_error, [{download, Download}, {error, Error}]})
 	end.
 
 %%----------------------------------------------------------------------
@@ -198,7 +198,7 @@ loop(Account, Downloads, Subscriber) ->
 				RefreshedAccount ->
 					login_premiums(Account, RefreshedAccount)
 			end,
-			proc_lib:cond_send(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
+			process_lib:cond_send(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
 			loop(Account, Downloads, SubscriberPid);
 
 		%%
@@ -213,11 +213,11 @@ loop(Account, Downloads, Subscriber) ->
 														{SavedDownload:id(), [{download, SavedDownload}]} 
 													end, 
 													SavedDownloads),
-					proc_lib:cond_send(Subscriber, {manager_downloads_saved, SubscriberDownloads}),
+					process_lib:cond_send(Subscriber, {manager_downloads_saved, SubscriberDownloads}),
 					loop(Account, Downloads, Subscriber);
 				{error, Error} ->
 					erlang:display({manager_downloads_error, Error}),
-					proc_lib:cond_send(Subscriber, {manager_downloads_error, Error}),
+					process_lib:cond_send(Subscriber, {manager_downloads_error, Error}),
 					loop(Account, Downloads, Subscriber)
 			end;
 		
@@ -225,7 +225,7 @@ loop(Account, Downloads, Subscriber) ->
 		% called when the subscriber wants to refresh their downloads
 		%%
 		{subscriber_refresh, _} ->
-			proc_lib:cond_send(Subscriber, {manager_downloads, dict:to_list(Downloads)}),
+			process_lib:cond_send(Subscriber, {manager_downloads, dict:to_list(Downloads)}),
 			loop(Account, Downloads, Subscriber);
 
 		%%
@@ -269,7 +269,7 @@ loop(Account, Downloads, Subscriber) ->
 		% download progress update
 		%%
 		{download_progress, DownloadProps} ->
-			proc_lib:cond_send(Subscriber, {manager_download_progress, DownloadProps}),
+			process_lib:cond_send(Subscriber, {manager_download_progress, DownloadProps}),
 			Download = proplists:get_value(download, DownloadProps),
 			case Download:save() of
 				{ok, SavedDownload} ->

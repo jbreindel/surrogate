@@ -1,5 +1,5 @@
 
--module(proc_lib).
+-module(process_lib).
 -compile(export_all).
 
 cond_send(Pid, Data) ->
