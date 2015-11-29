@@ -46,10 +46,10 @@ acquire(Account, Download) ->
 			ManagerName = manager:pid_name(Account),
 			case parse_download_url(Body) of
 				undefined ->
-					process_lib:cond_send(Account, {download_not_found, [{download, Download}]});
+					process_lib:find_send(ManagerName, {download_not_found, [{download, Download}]});
 				RealUrl ->
 					erlang:display({download_acquired, [{real_url, RealUrl}, {account, Account}]}),
-					process_lib:cond_send(Account, {download_acquired, [{download, Download}, {real_url, RealUrl}]})
+					process_lib:find_send(ManagerName, {download_acquired, [{download, Download}, {real_url, RealUrl}]})
 			end;
 		Request ->
 			erlang:display(Request),
