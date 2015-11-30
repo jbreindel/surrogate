@@ -11,7 +11,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--module(downloader_updater).
+-module(download_updater).
 -export([update_download/2]).
 
 update_download(Account, Download) ->
@@ -30,11 +30,15 @@ update_download(Account, Download, DownloadProgress) ->
 			LastTimeMs = proplists:get_value(time, DownloadProgress),
 			ByteCount = NowFileSize - LastFileSize,
 			DeltaTime = NowTimeMs - LastTimeMs,
+			%%UpdatedDownload = Download:update(),
+			erlang:display([{download, Download}, {speed, ByteCount / DeltaTime}, {chunk_size, ByteCount}]),
 			process_lib:find_send(ManagerName, {download_progress,
 												[{download, Download}, 
 											  		{speed, ByteCount / DeltaTime}, 
-											  		{chunk_size, ByteCount}]})
-	end,
-	update_download(Account, Download,
-					[{time, NowTimeMs}, {length, NowFileSize}])
+											  		{chunk_size, ByteCount}]}),
+			update_download(Account, Download,
+							[{time, NowTimeMs}, {length, NowFileSize}]);
+		Message ->
+			erlang:display({download_updater_message, Message})
+	end.
 					

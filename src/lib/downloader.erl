@@ -129,8 +129,8 @@ execute(Account, Download) ->
 									{stream, UpdatedDownload:file()}, 
 									{receiver, self()}], HttpClient) of
 				{ok, RequestId} ->
+					UpdaterPid = spawn(download_updater, update_download, [Account, UpdatedDownload]),
 					erlang:display({http_message, {ok, RequestId}}),
-					UpdaterPid = spawn(download_updater, update_download, [Account, Download]),
 					download(Account, UpdatedDownload, UpdaterPid)
 			end;
 		{error, Errors} ->
