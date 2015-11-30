@@ -104,11 +104,18 @@ download(Account, Download, File, SpeedOrddict) ->
 			process_lib:find_send(ManagerName, {download_started, [{download, Download}]}),
 			download(Account, Download, File, SpeedOrddict);
 		{http, {RequestId, stream, BinBodyPart}} ->
-			erlang:display({requestId, RequestId}),
 			ByteSize = byte_size(BinBodyPart),
 			UpdatedDownload = Download:set(progress, Download:progress() + ByteSize),
 			UpdatedSpeedOrdict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
  			file:write(File, BinBodyPart),
+			case erlang:memory(binary) of
+				Binary when Binary >= 100000000 ->
+					erlang:display({garbage_collect, Binary}),
+					TimeMs = date_lib:now_to_milliseconds_hires(now()),
+					erlang:garbage_collect(self(), [{async, TimeMs}]);
+				_ ->
+					ok
+			end,
 			download(Account, UpdatedDownload, File, UpdatedSpeedOrdict);
 		{http, {RequestId, stream_end, Headers}} ->
 			ManagerName = manager:pid_name(Account),
