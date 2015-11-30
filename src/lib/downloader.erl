@@ -96,38 +96,26 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 			end
 	end.
 
-download_garbage_collect(Account) ->
-	case erlang:memory(binary) of
-		Binary when Binary >= 50000000 ->
-			HttpClientPid = http_client:instance(Account),
-			[erlang:garbage_collect(Pid) || Pid <- processes()],
-			erlang:display({garbage_collect, [{binary_before, Binary}, 
-											  {binary_after, erlang:memory(binary)}]});
-		_ ->
-			ok
-	end.
-
-download(Account, Download, File, SpeedOrddict, HttpRequestId) ->
+download(Account, Download, UpdaterPid) ->
 	receive
 		{http, {RequestId, stream_start, Headers}} ->
-			erlang:display({stream_start, Headers}),
+			erlang:display({http_stream_start, Headers}),
 			ManagerName = manager:pid_name(Account),
 			process_lib:find_send(ManagerName, {download_started, [{download, Download}]}),
-			download(Account, Download, File, SpeedOrddict, RequestId);
-		{http, {RequestId, stream, BinBodyPart}} ->
-			ByteSize = byte_size(BinBodyPart),
-			UpdatedDownload = Download:set(progress, Download:progress() + ByteSize),
-			UpdatedSpeedOrddict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
- 			file:write(File, BinBodyPart),
-			download_garbage_collect(Account),
-			download(Account, UpdatedDownload, File, UpdatedSpeedOrddict, RequestId);
-		{http, {RequestId, stream_end, Headers}} ->
+			download(Account, Download, RequestId);
+		{http, {RequestId, saved_to_file}} ->
+			erlang:display({http_saved_to_file, RequestId}),
 			ManagerName = manager:pid_name(Account),
-			process_lib:find_send(ManagerName, {download_complete, [{download, Download}]})
-	after
-		5000 ->
+			process_lib:find_send(ManagerName, {download_complete, [{download, Download}]}),
+			exit(UpdaterPid, kill);
+		{http, {RequestId, {error, Reason}}} ->
+			erlang:display({http_error, RequestId}),
 			ManagerName = manager:pid_name(Account),
-			process_lib:find_send(ManagerName, {download_error, [{download, Download}]})
+			process_lib:find_send(ManagerName, {download_error, [{download, Download}]}),
+			exit(UpdaterPid, kill);
+		Message ->
+			erlang:display({message, Message}),
+			download(Account, Download, UpdaterPid)
 	end.
 
 execute(Account, Download) ->
@@ -136,10 +124,14 @@ execute(Account, Download) ->
 		{download, UpdatedDownload} ->
 			Headers = [{"User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36"},
 				   {"Accept-Language", "en-US,en;q=0.8"}],
-			case httpc:request(get, {UpdatedDownload:real_url(), Headers}, [], [{sync, false}, {stream, self}, {receiver, self()}, {body_format, binary}], HttpClient) of
+			case httpc:request(get, {UpdatedDownload:real_url(), Headers}, [], 
+							   		[{sync, false}, 
+									{stream, UpdatedDownload:file()}, 
+									{receiver, self()}], HttpClient) of
 				{ok, RequestId} ->
-					File = file:open(UpdatedDownload:file(), [append]),
-					download(Account, UpdatedDownload, File, orddict:new(), RequestId)
+					erlang:display({http_message, {ok, RequestId}}),
+					UpdaterPid = spawn(download_updater, update_download, [Account, Download]),
+					download(Account, UpdatedDownload, UpdaterPid)
 			end;
 		{error, Errors} ->
 			erlang:display({content_disposition, Download})
