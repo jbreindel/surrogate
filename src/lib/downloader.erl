@@ -105,8 +105,10 @@ download(Account, Download, UpdaterPid) ->
 			download(Account, Download, RequestId);
 		{http, {RequestId, saved_to_file}} ->
 			erlang:display({http_saved_to_file, RequestId}),
+			NowFileSize = filelib:file_size(Download:file()),
+			UpdatedDownload = Download:set(progress, NowFileSize),
 			ManagerName = manager:pid_name(Account),
-			process_lib:find_send(ManagerName, {download_complete, [{download, Download}]}),
+			process_lib:find_send(ManagerName, {download_complete, [{download, UpdatedDownload}]}),
 			exit(UpdaterPid, kill);
 		{http, {RequestId, {error, Reason}}} ->
 			erlang:display({http_error, RequestId}),
