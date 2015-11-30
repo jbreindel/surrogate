@@ -96,27 +96,31 @@ update_speed(Account, Download, SpeedOrddict, Length) ->
 			end
 	end.
 
-download(Account, Download, File, SpeedOrddict) ->
+download_garbage_collect(Account) ->
+	case erlang:memory(binary) of
+		Binary when Binary >= 50000000 ->
+			HttpClientPid = http_client:instance(Account),
+			[erlang:garbage_collect(Pid) || Pid <- processes()],
+			erlang:display({garbage_collect, [{binary_before, Binary}, 
+											  {binary_after, erlang:memory(binary)}]});
+		_ ->
+			ok
+	end.
+
+download(Account, Download, File, SpeedOrddict, HttpRequestId) ->
 	receive
 		{http, {RequestId, stream_start, Headers}} ->
 			erlang:display({stream_start, Headers}),
 			ManagerName = manager:pid_name(Account),
 			process_lib:find_send(ManagerName, {download_started, [{download, Download}]}),
-			download(Account, Download, File, SpeedOrddict);
+			download(Account, Download, File, SpeedOrddict, RequestId);
 		{http, {RequestId, stream, BinBodyPart}} ->
 			ByteSize = byte_size(BinBodyPart),
 			UpdatedDownload = Download:set(progress, Download:progress() + ByteSize),
-			UpdatedSpeedOrdict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
+			UpdatedSpeedOrddict = update_speed(Account, UpdatedDownload, SpeedOrddict, ByteSize),
  			file:write(File, BinBodyPart),
-			case erlang:memory(binary) of
-				Binary when Binary >= 100000000 ->
-					erlang:display({garbage_collect, Binary}),
-					TimeMs = date_lib:now_to_milliseconds_hires(now()),
-					erlang:garbage_collect(self(), [{async, TimeMs}]);
-				_ ->
-					ok
-			end,
-			download(Account, UpdatedDownload, File, UpdatedSpeedOrdict);
+			download_garbage_collect(Account),
+			download(Account, UpdatedDownload, File, UpdatedSpeedOrddict, RequestId);
 		{http, {RequestId, stream_end, Headers}} ->
 			ManagerName = manager:pid_name(Account),
 			process_lib:find_send(ManagerName, {download_complete, [{download, Download}]})
@@ -135,7 +139,7 @@ execute(Account, Download) ->
 			case httpc:request(get, {UpdatedDownload:real_url(), Headers}, [], [{sync, false}, {stream, self}, {receiver, self()}, {body_format, binary}], HttpClient) of
 				{ok, RequestId} ->
 					File = file:open(UpdatedDownload:file(), [append]),
-					download(Account, UpdatedDownload, File, orddict:new())
+					download(Account, UpdatedDownload, File, orddict:new(), RequestId)
 			end;
 		{error, Errors} ->
 			erlang:display({content_disposition, Download})
