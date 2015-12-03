@@ -192,14 +192,14 @@ loop(Account, Downloads, Subscriber) ->
 		%%
 		{subscriber_connect, SubscriberPid} ->
 			erlang:display({subscriber_connect, SubscriberPid}),
+			process_lib:cond_send(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
 			case boss_db:find(Account:id()) of
 				undefined ->
-					error;
+					loop(Account, Downloads, SubscriberPid);
 				RefreshedAccount ->
-					login_premiums(Account, RefreshedAccount)
-			end,
-			process_lib:cond_send(SubscriberPid, {manager_downloads, dict:to_list(Downloads)}),
-			loop(Account, Downloads, SubscriberPid);
+					login_premiums(Account, RefreshedAccount),
+					loop(RefreshedAccount, Downloads, SubscriberPid)
+			end;
 
 		%%
 		% subscriber sent links to the manager
