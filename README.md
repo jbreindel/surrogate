@@ -2,7 +2,7 @@
 
 ![Alt text](/screens/surrogate.png)
 
-Surrogate is a simple single page proxy downloader app. It is a basic ChicagoBoss App written in erlang. **Right now it only supports rapidagator download links with a premium account**, but I would like it to support more premium services, standard http, and ftp downloads. 
+Surrogate is a simple single page proxy downloader app. It is a basic [ChicagoBoss](http://chicagoboss.org/) App written in [erlang](http://www.erlang.org/). **Right now it only supports rapidagator download links with a premium account**, but I would like it to support more premium services, standard http, and ftp downloads. 
 
 ## Requirements
 - Erlang OTP 17.0+
