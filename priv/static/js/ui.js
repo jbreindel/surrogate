@@ -178,7 +178,7 @@
  	 	 	$('#pending-table-container').load('/download/downloads/?status=pending');	
  	 	 	
  	 	 	// send a message to the websocket to refresh
- 	 		managerSocket.send(JSON.stringify({
+ 	 		managerWebSocket.send(JSON.stringify({
  	 			refresh: 'refresh'
  	 		}));
  		}
